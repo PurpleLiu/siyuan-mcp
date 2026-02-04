@@ -1,22 +1,22 @@
 # SiYuan MCP Server
 
-A [Model Context Protocol](https://modelcontextprotocol.io/) (MCP) server that connects AI assistants to [SiYuan Note](https://github.com/siyuan-note/siyuan). Search, read, create, and organize your notes through natural language.
+紫/ PurpleLiu 維護的 SiYuan MCP 伺服器，讓 AI 工具透過 **Model Context Protocol (MCP)** 連接 [SiYuan Note](https://github.com/siyuan-note/siyuan)，安全地搜尋、讀取、建立與整理你的筆記。
 
-Works with Claude Desktop, Cursor, OpenClaw, and any MCP-compatible client.
+相容 Claude Desktop、Cursor、OpenClaw 以及所有 MCP-compatible 客戶端。
 
-## Features
+## 功能亮點
 
-- **15 tools** covering search, documents, notebooks, daily notes, snapshots, and tags
-- **Unified search** — content, filename, tag, or any combination
-- **Document tree** — browse your notebook hierarchy with configurable depth
-- **Daily notes** — auto-creates today's note if it doesn't exist
-- **Snapshot management** — backup and restore your data
-- **Stdio & HTTP transports** — flexible integration options
-- **TypeScript** — full type definitions included
+- **15 個工具** 覆蓋搜尋、文件、筆記本、今日筆記、快照與標籤
+- **統一搜尋** — 內容、檔名、標籤與組合條件
+- **文件樹** — 以深度瀏覽筆記本階層
+- **今日筆記** — 不存在即自動建立
+- **快照管理** — 建立/列出/回滾
+- **Stdio & HTTP** 兩種傳輸模式
+- **TypeScript** 完整型別
 
-## Quick Start
+## 快速開始
 
-### Install
+### 安裝
 
 ```bash
 git clone https://github.com/PurpleLiu/siyuan-mcp.git
@@ -25,12 +25,11 @@ npm install && npm run build
 npm install -g .
 ```
 
-### Get Your SiYuan API Token
+### 取得 SiYuan API Token
 
-1. Open SiYuan Note → Settings → About → API Token
-2. Copy the token
+SiYuan → 設定 → 關於 → API Token
 
-### Configure Your MCP Client
+### 設定 MCP Client
 
 **Cursor** (`~/.cursor/mcp.json`):
 
@@ -58,87 +57,83 @@ npm install -g .
 }
 ```
 
-Config file location:
+Config 路徑：
 - macOS: `~/Library/Application Support/Claude/claude_desktop_config.json`
 - Windows: `%APPDATA%\Claude\claude_desktop_config.json`
 
-## Tools
+## 工具列表
 
-| Category | Tool | Description |
-|----------|------|-------------|
-| 🔍 Search | `unified_search` | Search by content, filename, tag, or combination |
-| 📄 Documents | `get_document_content` | Read note content (markdown, with pagination) |
-| | `create_document` | Create a new note |
-| | `append_to_document` | Append content to a note |
-| | `update_document` | Replace note content |
-| | `move_documents` | Move notes to a new location |
-| | `get_document_tree` | Browse notebook structure by depth |
-| 📅 Daily Notes | `append_to_daily_note` | Append to today's daily note |
-| 📚 Notebooks | `list_notebooks` | List all notebooks |
-| | `get_recently_updated_documents` | Recently modified notes |
-| 📸 Snapshots | `create_snapshot` | Create a backup snapshot |
-| | `list_snapshots` | List available snapshots |
-| | `rollback_to_snapshot` | Restore from snapshot |
-| 🏷️ Tags | `list_all_tags` | List all tags (with prefix/depth filtering) |
-| | `batch_replace_tag` | Rename or remove tags in bulk |
+| 分類 | Tool | 說明 |
+|------|------|------|
+| 🔍 Search | `unified_search` | 以內容/檔名/標籤或組合搜尋 |
+| 📄 Documents | `get_document_content` | 讀取文件內容（分頁） |
+| | `create_document` | 建立新文件 |
+| | `append_to_document` | 追加內容 |
+| | `update_document` | 覆寫內容 |
+| | `move_documents` | 移動文件 |
+| | `get_document_tree` | 依深度取得文件樹 |
+| 📅 Daily Notes | `append_to_daily_note` | 追加到今日筆記 |
+| 📚 Notebooks | `list_notebooks` | 列出筆記本 |
+| | `get_recently_updated_documents` | 最近更新文件 |
+| 📸 Snapshots | `create_snapshot` | 建立快照 |
+| | `list_snapshots` | 列出快照 |
+| | `rollback_to_snapshot` | 回滾快照 |
+| 🏷️ Tags | `list_all_tags` | 列出所有標籤（支援前綴/深度） |
+| | `batch_replace_tag` | 批次替換或移除標籤 |
 
-## Usage Examples
-
-Just talk to your AI assistant:
+## 使用示例
 
 ```
-"List all my notebooks"
-"Search for notes about kubernetes"
-"Show me the tree structure of my Work notebook, 3 levels deep"
-"Create a meeting note under Projects/2026"
-"Append today's standup notes to my daily note"
-"Move these three documents into the Archive notebook"
-"What tags do I have under 'project/'?"
+"列出所有筆記本"
+"搜尋與 kubernetes 相關的筆記"
+"顯示 Work 筆記本的 3 層文件樹"
+"在 Projects/2026 建立一份會議記錄"
+"把今天的 standup 記錄加入今日筆記"
+"把這三篇文件移到 Archive"
+"有哪些 project/ 開頭的標籤？"
 ```
 
-## Using as a Library
+## 作為程式庫使用
 
-```typescript
+```ts
 import { createSiyuanTools } from '@purpleliu/siyuan-mcp';
 
 const siyuan = createSiyuanTools('http://127.0.0.1:6806', 'your-token');
 
 const notebooks = await siyuan.listNotebooks();
 const content = await siyuan.getFileContent(documentId);
-const results = await siyuan.search.query("SELECT * FROM blocks WHERE content LIKE '%keyword%'");
+const results = await siyuan.search.query(
+  "SELECT * FROM blocks WHERE content LIKE '%keyword%'"
+);
 ```
 
-## Development
+## 開發
 
 ```bash
-npm install          # Install dependencies
-npm run build        # Build
-npm run watch        # Watch mode
+npm install          # 安裝依賴
+npm run build        # 編譯
+npm run watch        # 監看編譯
 npm run lint         # Lint
-npm run format       # Format
+npm run format       # 格式化
 
-# Manual testing
+# 手動測試
 npm run mcp:stdio -- --token YOUR_TOKEN --baseUrl http://127.0.0.1:6806
 npm run mcp:http -- --token YOUR_TOKEN --port 3000 --baseUrl http://127.0.0.1:6806
 ```
 
-## Project Structure
+## 專案結構
 
 ```
-├── src/               # Core library
-│   ├── api/           # SiYuan API clients
-│   ├── types/         # TypeScript type definitions
-│   └── utils/         # Helpers
-├── mcp-server/        # MCP server
-│   ├── bin/           # CLI entry points (stdio/http)
+├── src/               # 核心 library
+│   ├── api/           # SiYuan API client
+│   ├── types/         # TypeScript 型別
+│   └── utils/         # 工具函式
+├── mcp-server/        # MCP 伺服器
+│   ├── bin/           # CLI 入口 (stdio/http)
 │   ├── core/          # Server core & registry
-│   └── handlers/      # Tool handler implementations
-└── dist/              # Compiled output
+│   └── handlers/      # Tool handlers
+└── dist/              # 編譯輸出
 ```
-
-## Acknowledgments
-
-Originally based on [@porkll/siyuan-mcp](https://github.com/porkll/siyuan-mcp) (Apache 2.0). This version includes bug fixes (notably the document tree query) and is independently maintained.
 
 ## License
 

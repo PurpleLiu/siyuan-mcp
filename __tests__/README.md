@@ -1,108 +1,101 @@
-# 测试说明
+# 測試說明
 
-## 前置条件
+## 前置條件
 
-在运行测试之前,请确保:
+在執行測試前，請完成以下設定：
 
-1. **配置环境变量**
+1. **設定環境變數**
 
-   复制 `.env.example` 为 `.env`:
+   複製 `.env.example` 為 `.env`：
    ```bash
    cp .env.example .env
    ```
 
-   编辑 `.env` 文件,配置以下变量:
+   編輯 `.env`：
    ```bash
-   # SiYuan API Base URL (默认: http://127.0.0.1:6806)
+   # SiYuan API Base URL (預設: http://127.0.0.1:6806)
    SIYUAN_BASE_URL=http://127.0.0.1:6806
 
-   # SiYuan API Token (从 设置 → 关于 → API Token 获取)
+   # SiYuan API Token (設定 → 關於 → API Token)
    SIYUAN_TOKEN=your-api-token-here
 
-   # 测试笔记本名称 (默认: 99测试)
-   SIYUAN_TEST_NOTEBOOK=99测试
+   # 測試筆記本名稱 (預設: 99測試)
+   SIYUAN_TEST_NOTEBOOK=99測試
    ```
 
-2. **思源笔记正在运行**
-   - 默认地址: `http://127.0.0.1:6806`
-   - 如果使用不同端口,在 `.env` 中修改 `SIYUAN_BASE_URL`
+2. **啟動 SiYuan**
+   - 預設位置: `http://127.0.0.1:6806`
+   - 如有不同埠號，請在 `.env` 中修改 `SIYUAN_BASE_URL`
 
-3. **创建测试笔记本**
-   - 在思源笔记中创建一个名为 **"99测试"** 的笔记本 (或 `.env` 中指定的名称)
-   - 所有测试数据都会在这个笔记本中创建和操作
-   - 测试不会影响其他笔记本的数据
+3. **建立測試筆記本**
+   - 在 SiYuan 建立名為 **"99測試"** 的筆記本（或 `.env` 指定名稱）
+   - 測試資料僅會寫入這個筆記本
 
-## 运行测试
+## 執行測試
 
 ```bash
-# 运行所有测试
 npm test
-
-# 监视模式(自动重新运行)
+# 或
 npm run test:watch
 ```
 
-## 测试内容
+## 測試涵蓋
 
-测试覆盖 15 个 MCP 工具:
+共覆蓋 15 個 MCP 工具：
 
-### 🔍 搜索 (1个)
-- `unified_search` - 统一搜索
+### 🔍 搜尋 (1個)
+- `unified_search`
 
-### 📄 文档操作 (6个)
-- `get_document_content` - 获取文档内容
-- `create_document` - 创建文档
-- `append_to_document` - 追加内容
-- `update_document` - 更新文档
-- `append_to_daily_note` - 追加到今日笔记
-- `move_documents` - 移动文档
-- `get_document_tree` - 获取文档树
+### 📄 文件操作 (6個)
+- `get_document_content`
+- `create_document`
+- `append_to_document`
+- `update_document`
+- `append_to_daily_note`
+- `move_documents`
+- `get_document_tree`
 
-### 📚 笔记本 (2个)
-- `list_notebooks` - 列出笔记本
-- `get_recently_updated_documents` - 获取最近更新的文档
+### 📚 筆記本 (2個)
+- `list_notebooks`
+- `get_recently_updated_documents`
 
-### 📸 快照 (3个)
-- `create_snapshot` - 创建快照
-- `list_snapshots` - 列出快照
-- `rollback_to_snapshot` - 回滚快照
+### 📸 快照 (3個)
+- `create_snapshot`
+- `list_snapshots`
+- `rollback_to_snapshot`
 
-### 🏷️ 标签 (2个)
-- `list_all_tags` - 列出所有标签
-- `batch_replace_tag` - 批量替换标签
+### 🏷️ 標籤 (2個)
+- `list_all_tags`
+- `batch_replace_tag`
 
-## 测试数据
+## 測試資料
 
-测试会在 "99测试" 笔记本中创建:
+測試會在「99測試」筆記本中建立：
 
-- 测试文档 (名称以 `test-doc-` 开头)
-- 测试标签 (名称以 `test-tag-` 开头)
-- 今日笔记条目
+- 測試文件（`test-doc-` 開頭）
+- 測試標籤（`test-tag-` 開頭）
+- 今日筆記條目
 - 快照
 
-**注意**: 标签替换测试会保留测试标签在文档中,以便手动验证。如果需要清理,可以取消注释测试中的清理代码。
+> 注意：標籤替換測試會保留測試標籤，方便手動驗證。
 
-## 故障排查
+## 常見問題
 
-### 测试失败: "SIYUAN_TOKEN is not set"
-- 确保已创建 `.env` 文件
-- 检查 `.env` 文件中 `SIYUAN_TOKEN` 是否正确配置
+### SIYUAN_TOKEN is not set
+- 確認 `.env` 已建立
+- 檢查 `SIYUAN_TOKEN` 是否正確
 
-### 测试失败: "Test notebook '99测试' not found"
-- 在思源笔记中创建测试笔记本 (默认名称: "99测试")
-- 或修改 `.env` 中的 `SIYUAN_TEST_NOTEBOOK` 为已存在的笔记本名称
+### Test notebook not found
+- 請建立測試筆記本
+- 或調整 `SIYUAN_TEST_NOTEBOOK`
 
-### 测试失败: 连接错误
-- 确认思源笔记正在运行
-- 检查 `.env` 文件中 `SIYUAN_BASE_URL` 和 `SIYUAN_TOKEN` 是否正确
+### 連線失敗
+- 確認 SiYuan 已啟動
+- 檢查 `SIYUAN_BASE_URL` / `SIYUAN_TOKEN`
 
-### 测试超时
-- 检查网络连接
-- 增加测试超时时间 (在 jest.config.js 中修改 `testTimeout`)
+### 測試超時
+- 增加 `jest.config.js` 的 `testTimeout`
 
-## 清理测试数据
+## 清理測試資料
 
-如果需要清理测试数据,可以:
-
-1. 在思源笔记中删除 "99测试" 笔记本中的测试文档
-2. 或者直接删除整个 "99测试" 笔记本,然后重新创建
+可直接刪除「99測試」筆記本，或清掉其中測試文件與標籤。
