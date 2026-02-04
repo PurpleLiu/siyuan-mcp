@@ -4,6 +4,12 @@
 
 A Model Context Protocol (MCP) server for SiYuan Note, enabling AI assistants like Claude, Cursor, and other MCP-compatible tools to interact with your SiYuan notes seamlessly.
 
+> **Note:** This project is based on [@porkll/siyuan-mcp](https://github.com/porkll/siyuan-mcp) (Apache 2.0 License), with bug fixes and improvements. See [CHANGELOG](#changelog) for details.
+
+## Changelog
+
+- **fix:** Replaced broken recursive SQL query in `get_document_tree` with SiYuan's native `/api/filetree/listDocsByPath` API. The original implementation used `parent_id` to build document hierarchy, but SiYuan document blocks always have empty `parent_id` — file hierarchy is determined by path, not parent_id.
+
 ## ⚠️ Important Notice | 重要声明
 
 **English:**
