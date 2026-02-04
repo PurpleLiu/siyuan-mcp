@@ -4,7 +4,7 @@
 
 import type { SiyuanClient } from './client.js';
 import type { DocTreeNode, DocTreeNodeResponse } from '../types/index.js';
-import { extractTitle } from '../utils/format.js';
+// extractTitle removed - no longer needed
 
 export class SiyuanDocumentApi {
   constructor(private client: SiyuanClient) {}
@@ -190,120 +190,110 @@ export class SiyuanDocumentApi {
 
   /**
    * 获取文档树结构（带深度限制）
+   * 使用 listDocsByPath API 递归获取，正确处理文档层级关系
    * @param id 文档ID或笔记本ID
    * @param maxDepth 最大深度（1表示只返回直接子节点，默认为1）
    * @returns 文档树响应节点数组
    */
   async getDocumentTree(id: string, maxDepth: number = 1): Promise<DocTreeNodeResponse[]> {
-    // 使用SQL查询获取文档树结构
-    const sql = this.buildTreeQuery(id, maxDepth);
+    // 判断 id 是笔记本ID还是文档ID
+    // 笔记本ID格式: 2025MMDD...-xxxxxxx (通常较长且以日期开头)
+    // 先尝试作为笔记本ID获取
+    const notebookId = await this.resolveNotebookId(id);
+
+    if (notebookId) {
+      // id 是笔记本ID，从根路径开始
+      return await this.listDocsRecursive(notebookId, '/', maxDepth, 0, '');
+    } else {
+      // id 是文档ID，先查出它的 box 和 path
+      const docInfo = await this.getDocInfo(id);
+      if (!docInfo) {
+        throw new Error(`Document or notebook not found: ${id}`);
+      }
+      // 从该文档的路径开始列出子文档
+      return await this.listDocsRecursive(docInfo.box, docInfo.path, maxDepth, 0, docInfo.hpath);
+    }
+  }
+
+  /**
+   * 判断 id 是否为笔记本ID
+   */
+  private async resolveNotebookId(id: string): Promise<string | null> {
+    try {
+      const response = await this.client.request<any>('/api/notebook/lsNotebooks', {});
+      const notebooks = response.data?.notebooks || [];
+      const found = notebooks.find((nb: any) => nb.id === id);
+      return found ? found.id : null;
+    } catch {
+      return null;
+    }
+  }
+
+  /**
+   * 获取文档的 box 和 path 信息
+   */
+  private async getDocInfo(docId: string): Promise<{ box: string; path: string; hpath: string } | null> {
     const response = await this.client.request<any[]>('/api/query/sql', {
-      stmt: sql,
+      stmt: `SELECT box, path, hpath FROM blocks WHERE id = '${docId}' AND type = 'd' LIMIT 1`,
+    });
+    const data = response.data || [];
+    if (data.length === 0) return null;
+    return { box: data[0].box, path: data[0].path, hpath: data[0].hpath };
+  }
+
+  /**
+   * 递归使用 listDocsByPath 获取文档树
+   */
+  private async listDocsRecursive(
+    notebookId: string,
+    path: string,
+    maxDepth: number,
+    currentDepth: number,
+    parentHPath: string
+  ): Promise<DocTreeNodeResponse[]> {
+    const response = await this.client.request<any>('/api/filetree/listDocsByPath', {
+      notebook: notebookId,
+      path: path,
+      sort: 15, // 按文件名排序
+      maxListCount: 0, // 不限制数量
     });
 
     if (response.code !== 0) {
-      throw new Error(`Failed to get document tree: ${response.msg}`);
+      throw new Error(`Failed to list docs: ${response.msg}`);
     }
 
-    // 转换为响应树形结构 - response.data 是对象数组
-    return this.toDocTreeNodeResponse(response.data || []);
-  }
+    const files = response.data?.files || [];
+    const nodes: DocTreeNodeResponse[] = [];
 
-  /**
-   * 构建查询文档树的SQL语句
-   */
-  private buildTreeQuery(id: string, maxDepth: number): string {
-    // 查询指定ID下的所有文档，按深度限制
-    return `
-      WITH RECURSIVE doc_tree AS (
-        -- 基础查询：获取起始节点
-        -- 情况1: id 是笔记本ID (box) - 获取该笔记本的顶层文档
-        -- 情况2: id 是文档ID - 获取该文档及其子文档
-        SELECT
-          b.id,
-          b.parent_id,
-          b.root_id,
-          b.content as name,
-          b.box,
-          b.path,
-          b.hpath,
-          b.type,
-          b.subtype,
-          b.ial,
-          0 as depth
-        FROM blocks b
-        WHERE b.type = 'd'
-          AND (
-            -- 情况1: 笔记本的顶层文档 (box匹配且parent_id为空)
-            (b.box = '${id}' AND b.parent_id = '')
-            OR
-            -- 情况2: 指定文档ID
-            b.id = '${id}'
-          )
+    for (const file of files) {
+      // 文件名去掉 .sy 后缀即为标题
+      const name = file.name.replace(/\.sy$/, '');
+      const hpath = parentHPath ? `${parentHPath}/${name}` : `/${name}`;
 
-        UNION ALL
-
-        -- 递归查询：获取子节点
-        SELECT
-          b.id,
-          b.parent_id,
-          b.root_id,
-          b.content as name,
-          b.box,
-          b.path,
-          b.hpath,
-          b.type,
-          b.subtype,
-          b.ial,
-          dt.depth + 1 as depth
-        FROM blocks b
-        INNER JOIN doc_tree dt ON b.parent_id = dt.id
-        WHERE b.type = 'd'
-          AND dt.depth < ${maxDepth}
-      )
-      SELECT * FROM doc_tree
-      ORDER BY depth, path;
-    `;
-  }
-
-  /**
-   * 从查询结果构建文档树响应结构
-   */
-  private toDocTreeNodeResponse(data: any[]): DocTreeNodeResponse[] {
-    if (!data || data.length === 0) return [];
-
-    // 将对象数据转换为响应节点对象
-    const nodeMap = new Map<string, DocTreeNodeResponse>();
-    const rootNodes: DocTreeNodeResponse[] = [];
-
-    data.forEach((item) => {
       const node: DocTreeNodeResponse = {
-        id: item.id as string,
-        name: extractTitle(item.content || item.name), // content/name
-        path: item.hpath as string, // 人类可读路径
-        children: [],
+        id: file.id,
+        name: name,
+        path: hpath,
       };
 
-      nodeMap.set(node.id, node);
-
-      // 如果是根节点或没有父节点
-      const parentId = item.parent_id as string;
-      const depth = item.depth as number;
-
-      if (depth === 0 || !parentId) {
-        rootNodes.push(node);
-      } else {
-        const parent = nodeMap.get(parentId);
-        if (parent) {
-          if (!parent.children) {
-            parent.children = [];
-          }
-          parent.children.push(node);
-        }
+      // 如果还有子文档且未达到深度限制，递归获取
+      if (file.subFileCount > 0 && currentDepth + 1 < maxDepth) {
+        node.children = await this.listDocsRecursive(
+          notebookId,
+          file.path,
+          maxDepth,
+          currentDepth + 1,
+          hpath
+        );
+      } else if (file.subFileCount > 0) {
+        // 标记有子文档但未展开
+        node.children = [];
       }
-    });
 
-    return rootNodes;
+      nodes.push(node);
+    }
+
+    return nodes;
   }
 
 
