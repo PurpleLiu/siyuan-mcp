@@ -1,7 +1,7 @@
 {
-  "name": "@porkll/siyuan-mcp",
-  "version": "0.1.6",
-  "description": "SiYuan Note MCP Server - Model Context Protocol server for SiYuan Note",
+  "name": "@purpleliu/siyuan-mcp",
+  "version": "1.0.0",
+  "description": "A robust MCP (Model Context Protocol) server for SiYuan Note — connect your AI tools to your knowledge base.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "type": "module",
@@ -25,19 +25,24 @@
     "siyuan-note",
     "mcp",
     "model-context-protocol",
-    "claude",
-    "llm",
     "ai",
-    "note-taking",
     "knowledge-management",
-    "typescript"
+    "note-taking",
+    "typescript",
+    "claude",
+    "cursor",
+    "llm"
   ],
-  "author": "lei",
+  "author": "PurpleLiu",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/porkll/siyuan-mcp.git"
+    "url": "git+https://github.com/PurpleLiu/siyuan-mcp.git"
   },
+  "bugs": {
+    "url": "https://github.com/PurpleLiu/siyuan-mcp/issues"
+  },
+  "homepage": "https://github.com/PurpleLiu/siyuan-mcp#readme",
   "engines": {
     "node": ">=18.0.0"
   },
@@ -59,7 +64,6 @@
   "files": [
     "dist",
     "README.md",
-    "README_zh.md",
     "LICENSE"
   ]
 }
