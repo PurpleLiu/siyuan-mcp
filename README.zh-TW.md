@@ -1,5 +1,7 @@
 # SiYuan MCP Server
 
+[English](./README.md) | **繁體中文**
+
 紫/ PurpleLiu 維護的 SiYuan MCP 伺服器，讓 AI 工具透過 **Model Context Protocol (MCP)** 連接 [SiYuan Note](https://github.com/siyuan-note/siyuan)，安全地搜尋、讀取、建立與整理你的筆記。
 
 相容 Claude Desktop、Cursor、OpenClaw 以及所有 MCP-compatible 客戶端。

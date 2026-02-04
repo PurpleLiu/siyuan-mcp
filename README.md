@@ -1,5 +1,7 @@
 # SiYuan MCP Server
 
+**English** | [繁體中文](./README.zh-TW.md)
+
 A SiYuan MCP server maintained by PurpleLiu. It connects AI tools to [SiYuan Note](https://github.com/siyuan-note/siyuan) through the **Model Context Protocol (MCP)** for safe search, reading, creation, and organization of your notes.
 
 Compatible with Claude Desktop, Cursor, OpenClaw, and any MCP-compatible client.

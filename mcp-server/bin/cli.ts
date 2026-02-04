@@ -7,7 +7,7 @@
  *   siyuan-mcp http --token <TOKEN> --port <PORT>
  *
  * Global Installation:
- *   npm install -g @siyuan-note/mcp-server
+ *   npm install -g @purpleliu/siyuan-mcp
  *   siyuan-mcp --help
  */
 
@@ -62,7 +62,7 @@ Configuration for Claude Desktop:
   }
 
 For more information:
-  https://github.com/siyuan-note/mcp-server
+  https://github.com/PurpleLiu/siyuan-mcp
 `);
 }
 
