@@ -5,6 +5,26 @@
 import { BaseToolHandler } from './base.js';
 import type { ExecutionContext, JSONSchema } from '../core/types.js';
 import type { DocTreeNodeResponse } from '../../src/types/index.js';
+import { readFileSync } from 'fs';
+
+/**
+ * Helper: resolve content from either `content` or `content_file` param
+ * If content_file is provided, read from that file path.
+ * This avoids shell escaping issues when passing multi-line markdown.
+ */
+function resolveContent(args: { content?: string; content_file?: string }): string {
+  if (args.content_file) {
+    try {
+      return readFileSync(args.content_file, 'utf-8');
+    } catch (error: any) {
+      throw new Error(`Failed to read content_file "${args.content_file}": ${error.message}`);
+    }
+  }
+  if (args.content) {
+    return args.content;
+  }
+  throw new Error('Either "content" or "content_file" must be provided');
+}
 
 type DailyNoteTodoItem = {
   text: string;
@@ -143,7 +163,7 @@ export class GetDocumentContentHandler extends BaseToolHandler<{ document_id: st
  * 创建文档
  */
 export class CreateDocumentHandler extends BaseToolHandler<
-  { notebook_id: string; path: string; content: string },
+  { notebook_id: string; path: string; content?: string; content_file?: string },
   string
 > {
   readonly name = 'create_document';
@@ -161,14 +181,19 @@ export class CreateDocumentHandler extends BaseToolHandler<
       },
       content: {
         type: 'string',
-        description: 'Markdown content for the new note',
+        description: 'Markdown content for the new note (use this OR content_file)',
+      },
+      content_file: {
+        type: 'string',
+        description: 'Path to a local file containing markdown content (avoids shell escaping issues)',
       },
     },
-    required: ['notebook_id', 'path', 'content'],
+    required: ['notebook_id', 'path'],
   };
 
   async execute(args: any, context: ExecutionContext): Promise<string> {
-    return await context.siyuan.createFile(args.notebook_id, args.path, args.content);
+    const content = resolveContent(args);
+    return await context.siyuan.createFile(args.notebook_id, args.path, content);
   }
 }
 
@@ -215,7 +240,7 @@ export class BatchCreateDocumentsHandler extends BaseToolHandler<
  * 追加到文档
  */
 export class AppendToDocumentHandler extends BaseToolHandler<
-  { document_id: string; content: string },
+  { document_id: string; content?: string; content_file?: string },
   string
 > {
   readonly name = 'append_to_document';
@@ -229,14 +254,19 @@ export class AppendToDocumentHandler extends BaseToolHandler<
       },
       content: {
         type: 'string',
-        description: 'Markdown content to append to the note',
+        description: 'Markdown content to append to the note (use this OR content_file)',
+      },
+      content_file: {
+        type: 'string',
+        description: 'Path to a local file containing markdown content (avoids shell escaping issues)',
       },
     },
-    required: ['document_id', 'content'],
+    required: ['document_id'],
   };
 
   async execute(args: any, context: ExecutionContext): Promise<string> {
-    return await context.siyuan.appendToFile(args.document_id, args.content);
+    const content = resolveContent(args);
+    return await context.siyuan.appendToFile(args.document_id, content);
   }
 }
 
@@ -244,7 +274,7 @@ export class AppendToDocumentHandler extends BaseToolHandler<
  * 更新文档
  */
 export class UpdateDocumentHandler extends BaseToolHandler<
-  { document_id: string; content: string },
+  { document_id: string; content?: string; content_file?: string },
   { success: boolean; document_id: string }
 > {
   readonly name = 'update_document';
@@ -258,14 +288,19 @@ export class UpdateDocumentHandler extends BaseToolHandler<
       },
       content: {
         type: 'string',
-        description: 'New markdown content that will replace the existing note content',
+        description: 'New markdown content that will replace the existing note content (use this OR content_file)',
+      },
+      content_file: {
+        type: 'string',
+        description: 'Path to a local file containing markdown content (avoids shell escaping issues)',
       },
     },
-    required: ['document_id', 'content'],
+    required: ['document_id'],
   };
 
   async execute(args: any, context: ExecutionContext): Promise<{ success: boolean; document_id: string }> {
-    await context.siyuan.overwriteFile(args.document_id, args.content);
+    const content = resolveContent(args);
+    await context.siyuan.overwriteFile(args.document_id, content);
     return { success: true, document_id: args.document_id };
   }
 }
