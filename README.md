@@ -145,6 +145,15 @@ Config locations:
 "Append today’s standup notes to my daily note"
 "Move these three documents into Archive"
 "What tags do I have under 'project/'?"
+"Get block attributes for this note"
+"Set a custom attribute on a block"
+"Run an SQL query to find recently updated notes"
+"Render a template with variables"
+"Upload an image asset"
+"Export this document to markdown"
+"List files under /data"
+"Push a notification message"
+"Check SiYuan system version"
 ```
 
 ## Using as a Library
