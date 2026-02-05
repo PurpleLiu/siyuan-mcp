@@ -12,6 +12,14 @@ import { SiyuanDocumentApi } from './api/document.js';
 import { SiyuanNotebookApi } from './api/notebook.js';
 import { SiyuanSnapshotApi } from './api/snapshot.js';
 import { SiyuanTagApi } from './api/tag.js';
+import { SiyuanAttributeApi } from './api/attributes.js';
+import { SiyuanSqlApi } from './api/sql.js';
+import { SiyuanTemplateApi } from './api/templates.js';
+import { SiyuanAssetApi } from './api/assets.js';
+import { SiyuanFileApi } from './api/file.js';
+import { SiyuanExportApi } from './api/export.js';
+import { SiyuanNotificationApi } from './api/notification.js';
+import { SiyuanSystemApi } from './api/system.js';
 import { DailyNoteUtils } from './utils/daily-note.js';
 import { SiyuanHelpers } from './utils/helpers.js';
 
@@ -42,6 +50,30 @@ export class SiyuanTools {
   /** 标签操作相关 API */
   public readonly tag: SiyuanTagApi;
 
+  /** 属性相关 API */
+  public readonly attr: SiyuanAttributeApi;
+
+  /** SQL 相关 API */
+  public readonly sql: SiyuanSqlApi;
+
+  /** 模板相关 API */
+  public readonly template: SiyuanTemplateApi;
+
+  /** 资源相关 API */
+  public readonly asset: SiyuanAssetApi;
+
+  /** 文件相关 API */
+  public readonly file: SiyuanFileApi;
+
+  /** 导出相关 API */
+  public readonly export: SiyuanExportApi;
+
+  /** 通知相关 API */
+  public readonly notification: SiyuanNotificationApi;
+
+  /** 系统相关 API */
+  public readonly system: SiyuanSystemApi;
+
   /** 今日笔记工具 */
   public readonly dailyNote: DailyNoteUtils;
 
@@ -58,6 +90,14 @@ export class SiyuanTools {
     this.notebook = new SiyuanNotebookApi(this.client);
     this.snapshot = new SiyuanSnapshotApi(this.client);
     this.tag = new SiyuanTagApi(this.client);
+    this.attr = new SiyuanAttributeApi(this.client);
+    this.sql = new SiyuanSqlApi(this.client);
+    this.template = new SiyuanTemplateApi(this.client);
+    this.asset = new SiyuanAssetApi(this.client);
+    this.file = new SiyuanFileApi(this.client);
+    this.export = new SiyuanExportApi(this.client);
+    this.notification = new SiyuanNotificationApi(this.client);
+    this.system = new SiyuanSystemApi(this.client);
     this.dailyNote = new DailyNoteUtils(
       this.client,
       this.document,
@@ -186,5 +226,13 @@ export { SiyuanDocumentApi } from './api/document.js';
 export { SiyuanNotebookApi } from './api/notebook.js';
 export { SiyuanSnapshotApi } from './api/snapshot.js';
 export { SiyuanTagApi } from './api/tag.js';
+export { SiyuanAttributeApi } from './api/attributes.js';
+export { SiyuanSqlApi } from './api/sql.js';
+export { SiyuanTemplateApi } from './api/templates.js';
+export { SiyuanAssetApi } from './api/assets.js';
+export { SiyuanFileApi } from './api/file.js';
+export { SiyuanExportApi } from './api/export.js';
+export { SiyuanNotificationApi } from './api/notification.js';
+export { SiyuanSystemApi } from './api/system.js';
 export { DailyNoteUtils } from './utils/daily-note.js';
 export { SiyuanHelpers } from './utils/helpers.js';

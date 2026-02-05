@@ -104,6 +104,31 @@ Config locations:
 | | `unfold_block` | Unfold a block |
 | | `get_child_blocks` | Get child blocks |
 | | `transfer_block_ref` | Transfer block reference |
+| 🧱 Blocks | `delete_block` | Delete a block |
+| | `move_block` | Move a block |
+| | `fold_block` | Fold a block |
+| | `unfold_block` | Unfold a block |
+| | `get_child_blocks` | Get child blocks |
+| | `transfer_block_ref` | Transfer block reference |
+| 🧩 Attributes | `get_block_attrs` | Get block attributes |
+| | `set_block_attrs` | Set block attributes |
+| 🧮 SQL | `execute_sql` | Execute SQL query |
+| | `flush_transaction` | Flush SQL transaction |
+| 🧾 Templates | `render_template` | Render template by ID |
+| | `render_sprig` | Render sprig template |
+| 📦 Assets | `upload_asset_base64` | Upload asset (base64) |
+| 📁 Files | `get_file` | Get file by path |
+| | `put_file` | Write file by path |
+| | `remove_file` | Remove file by path |
+| | `rename_file` | Rename/move file |
+| | `list_files` | List files under path |
+| 📤 Export | `export_markdown` | Export markdown |
+| | `export_files` | Export files/folders |
+| 🔔 Notification | `push_message` | Push message |
+| | `push_error_message` | Push error message |
+| 🖥️ System | `get_boot_progress` | Get boot progress |
+| | `get_system_version` | Get system version |
+| | `get_system_time` | Get system time |
 | 📸 Snapshots | `create_snapshot` | Create snapshot |
 | | `list_snapshots` | List snapshots |
 | | `rollback_to_snapshot` | Rollback snapshot |

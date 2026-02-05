@@ -104,6 +104,31 @@ Config 路徑：
 | | `unfold_block` | 展開區塊 |
 | | `get_child_blocks` | 取得子區塊 |
 | | `transfer_block_ref` | 轉移區塊引用 |
+| 🧱 Blocks | `delete_block` | 刪除區塊 |
+| | `move_block` | 移動區塊 |
+| | `fold_block` | 摺疊區塊 |
+| | `unfold_block` | 展開區塊 |
+| | `get_child_blocks` | 取得子區塊 |
+| | `transfer_block_ref` | 轉移區塊引用 |
+| 🧩 Attributes | `get_block_attrs` | 取得區塊屬性 |
+| | `set_block_attrs` | 設定區塊屬性 |
+| 🧮 SQL | `execute_sql` | 執行 SQL 查詢 |
+| | `flush_transaction` | 送出 SQL 交易 |
+| 🧾 Templates | `render_template` | 以模板 ID 渲染 |
+| | `render_sprig` | 渲染 Sprig 模板 |
+| 📦 Assets | `upload_asset_base64` | 上傳資源（base64） |
+| 📁 Files | `get_file` | 取得檔案 |
+| | `put_file` | 寫入檔案 |
+| | `remove_file` | 刪除檔案 |
+| | `rename_file` | 重新命名/移動檔案 |
+| | `list_files` | 列出路徑下檔案 |
+| 📤 Export | `export_markdown` | 匯出 Markdown |
+| | `export_files` | 匯出檔案/資料夾 |
+| 🔔 Notification | `push_message` | 推播訊息 |
+| | `push_error_message` | 推播錯誤訊息 |
+| 🖥️ System | `get_boot_progress` | 取得啟動進度 |
+| | `get_system_version` | 取得系統版本 |
+| | `get_system_time` | 取得系統時間 |
 | 📸 Snapshots | `create_snapshot` | 建立快照 |
 | | `list_snapshots` | 列出快照 |
 | | `rollback_to_snapshot` | 回滾快照 |
