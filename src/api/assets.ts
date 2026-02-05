@@ -31,7 +31,7 @@ export class SiyuanAssetApi {
       throw new Error(`Failed to upload asset: HTTP ${response.status}`);
     }
 
-    const json = await response.json();
+    const json = await response.json() as any;
     if (json.code !== 0) {
       throw new Error(`Failed to upload asset: ${json.msg || 'Unknown error'}`);
     }
