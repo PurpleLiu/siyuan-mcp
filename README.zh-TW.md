@@ -8,7 +8,7 @@ PurpleLiu 維護的 SiYuan MCP 伺服器，讓 AI 工具透過 **Model Context P
 
 ## 功能亮點
 
-- **66 個工具** 覆蓋搜尋、文件、筆記本、區塊、今日筆記、快照與標籤
+- **67 個工具** 覆蓋搜尋、文件、筆記本、區塊、今日筆記、快照與標籤
 - **統一搜尋** — 內容、檔名、標籤與組合條件
 - **文件樹** — 以深度瀏覽筆記本階層
 - **今日筆記** — 不存在即自動建立
@@ -95,6 +95,7 @@ Config 路徑：
 | | `get_path_by_id` | 以文件 ID 取得存儲路徑 |
 | | `get_ids_by_hpath` | 以人類可讀路徑取得文件 ID |
 | 📅 Daily Notes | `append_to_daily_note` | 追加到今日筆記 |
+| | `list_daily_note_todos` | 列出近 N 天今日筆記未完成待辦 |
 | 📚 Notebooks | `list_notebooks` | 列出筆記本 |
 | | `get_recently_updated_documents` | 最近更新文件 |
 | | `get_notebook_by_id` | 取得筆記本資訊 |

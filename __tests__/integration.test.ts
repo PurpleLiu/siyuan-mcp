@@ -16,6 +16,7 @@ import {
   AppendToDocumentHandler,
   UpdateDocumentHandler,
   AppendToDailyNoteHandler,
+  ListDailyNoteTodosHandler,
   MoveDocumentsHandler,
   GetDocumentTreeHandler,
   RenameDocumentByIdHandler,
@@ -452,6 +453,43 @@ describe('SiYuan MCP Server Integration Tests', () => {
 
       console.log(`✓ Appended to daily note, block ID: ${result}`);
     });
+
+    test('ListDailyNoteTodosHandler - should list incomplete todos', async () => {
+      const appendHandler = new AppendToDailyNoteHandler();
+      const listHandler = new ListDailyNoteTodosHandler();
+      const context = { siyuan } as any;
+      const timestamp = Date.now();
+      const todoText = `Test todo ${timestamp}`;
+      const doneText = `Done todo ${timestamp}`;
+
+      await appendHandler.execute(
+        {
+          notebook_id: testNotebookId,
+          content: `\n- [ ] ${todoText}\n- [x] ${doneText}`,
+        },
+        context
+      );
+
+      const result = await listHandler.execute(
+        { notebook_id: testNotebookId, days: 1 },
+        context
+      );
+
+      expect(result).toBeDefined();
+      expect(Array.isArray(result)).toBe(true);
+
+      const foundTodo = result.find(item => item.text === todoText);
+      const foundDone = result.find(item => item.text === doneText);
+
+      expect(foundTodo).toBeDefined();
+      expect(foundTodo?.done).toBe(false);
+      expect(foundTodo?.document_id).toBeDefined();
+      expect(foundTodo?.line_no).toBeGreaterThanOrEqual(0);
+
+      expect(foundDone).toBeUndefined();
+
+      console.log(`✓ Listed daily note todos, found: ${todoText}`);
+    });
   });
 
   describe('Tag Operations', () => {
@@ -652,6 +690,7 @@ describe('SiYuan MCP Server Integration Tests', () => {
         { handler: new AppendToDocumentHandler(), expected: 'append_to_document' },
         { handler: new UpdateDocumentHandler(), expected: 'update_document' },
         { handler: new AppendToDailyNoteHandler(), expected: 'append_to_daily_note' },
+        { handler: new ListDailyNoteTodosHandler(), expected: 'list_daily_note_todos' },
         { handler: new MoveDocumentsHandler(), expected: 'move_documents' },
         { handler: new GetDocumentTreeHandler(), expected: 'get_document_tree' },
         { handler: new ListNotebooksHandler(), expected: 'list_notebooks' },

@@ -6,6 +6,79 @@ import { BaseToolHandler } from './base.js';
 import type { ExecutionContext, JSONSchema } from '../core/types.js';
 import type { DocTreeNodeResponse } from '../../src/types/index.js';
 
+type DailyNoteTodoItem = {
+  text: string;
+  done: boolean;
+  date: string;
+  document_id: string;
+  line_no: number;
+};
+
+const DEFAULT_DAILY_NOTE_PATH =
+  '/daily note/{{now | date "2006/01"}}/{{now | date "2006-01-02"}}';
+
+function formatGoDate(date: Date, layout: string): string {
+  const year = date.getFullYear();
+  const month = date.getMonth() + 1;
+  const day = date.getDate();
+  const hours = date.getHours();
+  const minutes = date.getMinutes();
+  const seconds = date.getSeconds();
+
+  const pad2 = (value: number) => String(value).padStart(2, '0');
+
+  let output = layout;
+  output = output.replace(/2006/g, String(year));
+  output = output.replace(/06/g, String(year).slice(-2));
+  output = output.replace(/01/g, pad2(month));
+  output = output.replace(/02/g, pad2(day));
+  output = output.replace(/15/g, pad2(hours));
+  output = output.replace(/04/g, pad2(minutes));
+  output = output.replace(/05/g, pad2(seconds));
+  return output;
+}
+
+function formatLocalDate(date: Date): string {
+  const year = date.getFullYear();
+  const month = String(date.getMonth() + 1).padStart(2, '0');
+  const day = String(date.getDate()).padStart(2, '0');
+  return `${year}-${month}-${day}`;
+}
+
+async function resolveDailyNotePath(
+  template: string,
+  date: Date,
+  context: ExecutionContext
+): Promise<{ path: string; reliable: boolean } | null> {
+  const pattern = /\{\{\s*now\s*\|\s*date\s*"([^"]+)"\s*\}\}/g;
+  let replaced = false;
+  const rendered = template.replace(pattern, (_match, layout) => {
+    replaced = true;
+    return formatGoDate(date, layout);
+  });
+
+  if (replaced) {
+    return { path: rendered, reliable: true };
+  }
+
+  if (!template.includes('{{')) {
+    return { path: template, reliable: false };
+  }
+
+  try {
+    const fallback = await context.siyuan.template.renderSprig(template, {
+      now: date.toISOString(),
+    });
+    if (fallback) {
+      return { path: fallback, reliable: false };
+    }
+  } catch (error) {
+    context.logger.debug('Failed to render daily note path template', error);
+  }
+
+  return null;
+}
+
 /**
  * 获取文档内容
  */
@@ -223,6 +296,102 @@ export class AppendToDailyNoteHandler extends BaseToolHandler<
 
   async execute(args: any, context: ExecutionContext): Promise<string> {
     return await context.siyuan.appendToDailyNote(args.notebook_id, args.content);
+  }
+}
+
+/**
+ * 列出近 N 天今日笔记未完成待办
+ */
+export class ListDailyNoteTodosHandler extends BaseToolHandler<
+  { notebook_id: string; days?: number },
+  DailyNoteTodoItem[]
+> {
+  readonly name = 'list_daily_note_todos';
+  readonly description =
+    'List incomplete markdown checkbox todos from daily notes within the specified notebook over the past N days. Returns 0-based line numbers.';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      notebook_id: {
+        type: 'string',
+        description: 'The notebook ID where daily notes reside',
+      },
+      days: {
+        type: 'number',
+        description: 'How many recent days to scan (default 7)',
+        default: 7,
+      },
+    },
+    required: ['notebook_id'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<DailyNoteTodoItem[]> {
+    const daysRaw = args.days ?? 7;
+    const days = Number.isFinite(daysRaw) ? Math.max(1, Math.floor(daysRaw)) : 7;
+
+    const notebookConf = await context.siyuan.notebook.getNotebookConf(args.notebook_id);
+    const dailyNoteSavePath = notebookConf.dailyNoteSavePath || DEFAULT_DAILY_NOTE_PATH;
+
+    const checkboxPattern = /^\s*-\s*\[( |x|X)\]\s+(.*)$/;
+    const todos: DailyNoteTodoItem[] = [];
+    const processedDocIds = new Set<string>();
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    for (let offset = 0; offset < days; offset += 1) {
+      const targetDate = new Date(today);
+      targetDate.setDate(today.getDate() - offset);
+
+      const resolved = await resolveDailyNotePath(dailyNoteSavePath, targetDate, context);
+      if (!resolved?.path) {
+        continue;
+      }
+
+      const docIds = await context.siyuan.document.getDocIdsByPath(
+        args.notebook_id,
+        resolved.path
+      );
+
+      if (!docIds || docIds.length === 0) {
+        continue;
+      }
+
+      for (const docId of docIds) {
+        if (processedDocIds.has(docId)) {
+          continue;
+        }
+        processedDocIds.add(docId);
+
+        const dateLabel = resolved.reliable ? formatLocalDate(targetDate) : docId;
+        const content = await context.siyuan.getFileContent(docId);
+        const lines = content.split('\n');
+
+        for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+          const line = lines[lineIndex];
+          const match = line.match(checkboxPattern);
+          if (!match) {
+            continue;
+          }
+
+          const isDone = match[1].toLowerCase() === 'x';
+          if (isDone) {
+            continue;
+          }
+
+          const text = match[2].trim();
+          todos.push({
+            text,
+            done: false,
+            date: dateLabel,
+            document_id: docId,
+            line_no: lineIndex,
+          });
+        }
+      }
+    }
+
+    return todos;
   }
 }
 
