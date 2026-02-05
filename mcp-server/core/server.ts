@@ -22,11 +22,16 @@ export class SiyuanMCPServer {
   private mcpServer: Server;
   private registry = new DefaultToolRegistry();
   private context: ExecutionContext;
-  private logger = new ConsoleLogger();
+  private logger: ConsoleLogger;
 
   constructor(config: ServerConfig) {
+    const logLevel = config.verbose ? 'debug' : 'info';
+    this.logger = new ConsoleLogger('[SiYuan-MCP]', logLevel);
+
     // 初始化 SiYuan 工具
-    const siyuan = createSiyuanTools(config.baseUrl, config.token);
+    const siyuan = createSiyuanTools(config.baseUrl, config.token, {
+      verbose: config.verbose,
+    });
 
     // 创建执行上下文
     this.context = {
@@ -137,7 +142,9 @@ export class SiyuanMCPServer {
         }
 
         // 执行工具
-        const result = await handler.execute(args || {}, this.context);
+        const result = 'safeExecute' in handler
+          ? await (handler as any).safeExecute(args || {}, this.context)
+          : await handler.execute(args || {}, this.context);
 
         // 格式化返回结果（符合 MCP 协议）
         // 处理 void 返回值（undefined）
@@ -200,7 +207,7 @@ SiYuan MCP 服务器提供了一套工具用于操作思源笔记，包括搜索
 
 ### 工作流程建议
 
-1. **搜索文档**：使用 \`search_by_filename\` 或 \`search_by_content\` 查找目标文档
+1. **搜索文档**：使用 \`unified_search\` 查找目标文档
 2. **获取内容**：使用 \`get_document_content\` 查看文档内容
 3. **创建快照**：使用 \`create_snapshot\` 保存当前状态
 4. **修改文档**：使用 \`update_document\`、\`append_to_document\` 等修改内容
@@ -209,24 +216,44 @@ SiYuan MCP 服务器提供了一套工具用于操作思源笔记，包括搜索
 
 ## 工具分类
 
-### 搜索工具（3个）
-- \`search_by_filename\`: 按文件名搜索文档
-- \`search_by_content\`: 按内容搜索文档
-- \`sql_query\`: 执行 SQL 查询（高级用法）
+### 搜索工具
+- \`unified_search\`: 统一搜索（内容/标签/文件名等）
 
-### 文档工具（6个）
+### 文档工具
 - \`get_document_content\`: 获取文档的 Markdown 内容
 - \`create_document\`: 在指定笔记本创建新文档
 - \`append_to_document\`: 向文档追加内容
 - \`update_document\`: 更新（覆盖）文档内容
+- \`remove_document\`: 删除文档
+- \`rename_document\`: 重命名文档
+- \`move_documents\`: 移动文档到其他位置
+- \`get_document_tree\`: 获取文档树
+- \`get_human_path_by_id\`: 根据 ID 获取人类可读路径
+- \`get_human_path_by_path\`: 根据路径获取人类可读路径
+- \`get_path_by_id\`: 根据 ID 获取存储路径
+- \`get_ids_by_hpath\`: 根据人类可读路径获取 ID
 - \`append_to_daily_note\`: 追加内容到今日笔记
-- \`move_document\`: 移动文档到其他位置
 
-### 笔记本工具（2个）
+### 笔记本工具
 - \`list_notebooks\`: 列出所有笔记本
 - \`get_recently_updated_documents\`: 获取最近更新的文档
+- \`create_notebook\`: 创建笔记本
+- \`open_notebook\`: 打开笔记本
+- \`close_notebook\`: 关闭笔记本
+- \`rename_notebook\`: 重命名笔记本
+- \`remove_notebook\`: 删除笔记本
+- \`get_notebook_conf\`: 获取笔记本配置
+- \`set_notebook_conf\`: 设置笔记本配置
 
-### 快照工具（3个）
+### 块工具
+- \`delete_block\`: 删除块
+- \`move_block\`: 移动块
+- \`fold_block\`: 折叠块
+- \`unfold_block\`: 展开块
+- \`get_child_blocks\`: 获取子块
+- \`transfer_block_ref\`: 转移块引用
+
+### 快照工具
 - \`create_snapshot\`: 创建数据快照
 - \`list_snapshots\`: 列出所有快照
 - \`rollback_snapshot\`: 回滚到指定快照
@@ -237,7 +264,7 @@ SiYuan MCP 服务器提供了一套工具用于操作思源笔记，包括搜索
 
 \`\`\`
 1. create_snapshot(memo: "批量修改前的备份")
-2. search_by_content(content: "需要修改的内容")
+2. unified_search(query: "需要修改的内容")
 3. 对每个搜索结果：
    - get_document_content(document_id: "...")
    - 修改内容
@@ -257,8 +284,8 @@ SiYuan MCP 服务器提供了一套工具用于操作思源笔记，包括搜索
 
 \`\`\`
 1. create_snapshot(memo: "整理文档结构前")
-2. search_by_filename(filename: "待整理的文档")
-3. move_document(from_ids: "文档ID", to_id: "目标文档ID")
+2. unified_search(query: "待整理的文档")
+3. move_documents(from_ids: ["文档ID"], to_parent_id: "目标文档ID")
 \`\`\`
 
 ## 注意事项

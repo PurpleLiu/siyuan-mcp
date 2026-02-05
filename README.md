@@ -31,6 +31,14 @@ npm install -g .
 
 SiYuan → Settings → About → API Token
 
+### Environment Variables (optional)
+
+```bash
+export SIYUAN_TOKEN=your-token
+export SIYUAN_BASE_URL=http://127.0.0.1:6806
+export SIYUAN_VERBOSE=1   # optional
+```
+
 ### Configure Your MCP Client
 
 **Cursor** (`~/.cursor/mcp.json`):
@@ -72,11 +80,30 @@ Config locations:
 | | `create_document` | Create a new document |
 | | `append_to_document` | Append content |
 | | `update_document` | Replace content |
+| | `remove_document` | Remove a document |
+| | `rename_document` | Rename a document |
 | | `move_documents` | Move documents |
 | | `get_document_tree` | Get document tree by depth |
+| | `get_human_path_by_id` | Human-readable path by document ID |
+| | `get_human_path_by_path` | Human-readable path by storage path |
+| | `get_path_by_id` | Storage path by document ID |
+| | `get_ids_by_hpath` | Document IDs by human-readable path |
 | 📅 Daily Notes | `append_to_daily_note` | Append to today’s note |
 | 📚 Notebooks | `list_notebooks` | List notebooks |
 | | `get_recently_updated_documents` | Recently updated documents |
+| | `create_notebook` | Create a notebook |
+| | `open_notebook` | Open a notebook |
+| | `close_notebook` | Close a notebook |
+| | `rename_notebook` | Rename a notebook |
+| | `remove_notebook` | Remove a notebook |
+| | `get_notebook_conf` | Get notebook configuration |
+| | `set_notebook_conf` | Update notebook configuration |
+| 🧱 Blocks | `delete_block` | Delete a block |
+| | `move_block` | Move a block |
+| | `fold_block` | Fold a block |
+| | `unfold_block` | Unfold a block |
+| | `get_child_blocks` | Get child blocks |
+| | `transfer_block_ref` | Transfer block reference |
 | 📸 Snapshots | `create_snapshot` | Create snapshot |
 | | `list_snapshots` | List snapshots |
 | | `rollback_to_snapshot` | Rollback snapshot |

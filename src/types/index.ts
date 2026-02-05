@@ -17,6 +17,7 @@ export interface SiyuanApiResponse<T = any> {
 export interface SiyuanConfig {
   baseUrl: string;
   token: string;
+  verbose?: boolean;
 }
 
 /**

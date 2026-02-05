@@ -31,6 +31,14 @@ npm install -g .
 
 SiYuan → 設定 → 關於 → API Token
 
+### 環境變數（選用）
+
+```bash
+export SIYUAN_TOKEN=your-token
+export SIYUAN_BASE_URL=http://127.0.0.1:6806
+export SIYUAN_VERBOSE=1   # optional
+```
+
 ### 設定 MCP Client
 
 **Cursor** (`~/.cursor/mcp.json`):
@@ -72,11 +80,30 @@ Config 路徑：
 | | `create_document` | 建立新文件 |
 | | `append_to_document` | 追加內容 |
 | | `update_document` | 覆寫內容 |
+| | `remove_document` | 刪除文件 |
+| | `rename_document` | 重新命名文件 |
 | | `move_documents` | 移動文件 |
 | | `get_document_tree` | 依深度取得文件樹 |
+| | `get_human_path_by_id` | 以文件 ID 取得人類可讀路徑 |
+| | `get_human_path_by_path` | 以存儲路徑取得人類可讀路徑 |
+| | `get_path_by_id` | 以文件 ID 取得存儲路徑 |
+| | `get_ids_by_hpath` | 以人類可讀路徑取得文件 ID |
 | 📅 Daily Notes | `append_to_daily_note` | 追加到今日筆記 |
 | 📚 Notebooks | `list_notebooks` | 列出筆記本 |
 | | `get_recently_updated_documents` | 最近更新文件 |
+| | `create_notebook` | 建立筆記本 |
+| | `open_notebook` | 開啟筆記本 |
+| | `close_notebook` | 關閉筆記本 |
+| | `rename_notebook` | 重新命名筆記本 |
+| | `remove_notebook` | 刪除筆記本 |
+| | `get_notebook_conf` | 取得筆記本設定 |
+| | `set_notebook_conf` | 更新筆記本設定 |
+| 🧱 Blocks | `delete_block` | 刪除區塊 |
+| | `move_block` | 移動區塊 |
+| | `fold_block` | 摺疊區塊 |
+| | `unfold_block` | 展開區塊 |
+| | `get_child_blocks` | 取得子區塊 |
+| | `transfer_block_ref` | 轉移區塊引用 |
 | 📸 Snapshots | `create_snapshot` | 建立快照 |
 | | `list_snapshots` | 列出快照 |
 | | `rollback_to_snapshot` | 回滾快照 |

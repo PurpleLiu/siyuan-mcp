@@ -158,4 +158,59 @@ export class SiyuanBlockApi {
       throw new Error(`Failed to move block: ${response.msg}`);
     }
   }
+
+  /**
+   * 折叠块
+   * @param blockId 块 ID
+   */
+  async foldBlock(blockId: string): Promise<void> {
+    const response = await this.client.request('/api/block/foldBlock', { id: blockId });
+
+    if (response.code !== 0) {
+      throw new Error(`Failed to fold block: ${response.msg}`);
+    }
+  }
+
+  /**
+   * 展开块
+   * @param blockId 块 ID
+   */
+  async unfoldBlock(blockId: string): Promise<void> {
+    const response = await this.client.request('/api/block/unfoldBlock', { id: blockId });
+
+    if (response.code !== 0) {
+      throw new Error(`Failed to unfold block: ${response.msg}`);
+    }
+  }
+
+  /**
+   * 获取子块列表
+   * @param blockId 块 ID
+   */
+  async getChildBlocks(blockId: string): Promise<any[]> {
+    const response = await this.client.request<any[]>('/api/block/getChildBlocks', { id: blockId });
+
+    if (response.code !== 0) {
+      throw new Error(`Failed to get child blocks: ${response.msg}`);
+    }
+
+    return response.data || [];
+  }
+
+  /**
+   * 转移块引用
+   * @param fromId 源块 ID
+   * @param toId 目标块 ID
+   */
+  async transferBlockRef(fromId: string, toId: string): Promise<void> {
+    const response = await this.client.request('/api/block/transferBlockRef', {
+      fromID: fromId,
+      toID: toId,
+    });
+
+    if (response.code !== 0) {
+      throw new Error(`Failed to transfer block reference: ${response.msg}`);
+    }
+  }
 }
+

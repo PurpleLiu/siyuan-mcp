@@ -13,6 +13,9 @@ export * from './document.js';
 // 笔记本相关
 export * from './notebook.js';
 
+// 块相关
+export * from './block.js';
+
 // 快照相关
 export * from './snapshot.js';
 
@@ -30,12 +33,32 @@ import {
   AppendToDailyNoteHandler,
   MoveDocumentsHandler,
   GetDocumentTreeHandler,
+  RemoveDocumentHandler,
+  RenameDocumentHandler,
+  GetHumanPathByIdHandler,
+  GetHumanPathByPathHandler,
+  GetPathByIdHandler,
+  GetIdsByHPathHandler,
 } from './document.js';
 import {
   ListNotebooksHandler,
   GetRecentlyUpdatedDocumentsHandler,
   CreateNotebookHandler,
+  OpenNotebookHandler,
+  CloseNotebookHandler,
+  RenameNotebookHandler,
+  RemoveNotebookHandler,
+  GetNotebookConfHandler,
+  SetNotebookConfHandler,
 } from './notebook.js';
+import {
+  DeleteBlockHandler,
+  MoveBlockHandler,
+  FoldBlockHandler,
+  UnfoldBlockHandler,
+  GetChildBlocksHandler,
+  TransferBlockRefHandler,
+} from './block.js';
 import {
   CreateSnapshotHandler,
   ListSnapshotsHandler,
@@ -60,11 +83,31 @@ export function createAllHandlers() {
     new AppendToDailyNoteHandler(),
     new MoveDocumentsHandler(),
     new GetDocumentTreeHandler(),
+    new RemoveDocumentHandler(),
+    new RenameDocumentHandler(),
+    new GetHumanPathByIdHandler(),
+    new GetHumanPathByPathHandler(),
+    new GetPathByIdHandler(),
+    new GetIdsByHPathHandler(),
 
     // 笔记本
     new ListNotebooksHandler(),
     new GetRecentlyUpdatedDocumentsHandler(),
     new CreateNotebookHandler(),
+    new OpenNotebookHandler(),
+    new CloseNotebookHandler(),
+    new RenameNotebookHandler(),
+    new RemoveNotebookHandler(),
+    new GetNotebookConfHandler(),
+    new SetNotebookConfHandler(),
+
+    // 块
+    new DeleteBlockHandler(),
+    new MoveBlockHandler(),
+    new FoldBlockHandler(),
+    new UnfoldBlockHandler(),
+    new GetChildBlocksHandler(),
+    new TransferBlockRefHandler(),
 
     // 快照
     new CreateSnapshotHandler(),

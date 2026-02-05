@@ -163,10 +163,15 @@ export class SiyuanTools {
  * 创建 SiyuanTools 实例的工厂函数
  * @param baseUrl 思源笔记服务地址，默认 http://127.0.0.1:6806
  * @param token API Token
+ * @param options 额外选项（如 verbose）
  * @returns SiyuanTools 实例
  */
-export function createSiyuanTools(baseUrl = 'http://127.0.0.1:6806', token: string): SiyuanTools {
-  return new SiyuanTools({ baseUrl, token });
+export function createSiyuanTools(
+  baseUrl = 'http://127.0.0.1:6806',
+  token: string,
+  options: Partial<SiyuanConfig> = {}
+): SiyuanTools {
+  return new SiyuanTools({ baseUrl, token, ...options });
 }
 
 // 导出所有类型

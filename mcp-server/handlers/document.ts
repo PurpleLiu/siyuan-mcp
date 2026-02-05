@@ -298,3 +298,182 @@ export class GetDocumentTreeHandler extends BaseToolHandler<
     return await context.siyuan.document.getDocumentTree(args.id, depth);
   }
 }
+
+/**
+ * 删除文档
+ */
+export class RemoveDocumentHandler extends BaseToolHandler<
+  { notebook_id: string; path: string },
+  { success: boolean }
+> {
+  readonly name = 'remove_document';
+  readonly description = 'Remove a document by notebook ID and path (dangerous operation)';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      notebook_id: {
+        type: 'string',
+        description: 'Notebook ID containing the document',
+      },
+      path: {
+        type: 'string',
+        description: 'Document path (e.g., /folder/note)',
+      },
+    },
+    required: ['notebook_id', 'path'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<{ success: boolean }> {
+    await context.siyuan.document.removeDocument(args.notebook_id, args.path);
+    return { success: true };
+  }
+}
+
+/**
+ * 重命名文档
+ */
+export class RenameDocumentHandler extends BaseToolHandler<
+  { notebook_id: string; path: string; new_name: string },
+  { success: boolean; new_name: string }
+> {
+  readonly name = 'rename_document';
+  readonly description = 'Rename a document by notebook ID and path';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      notebook_id: {
+        type: 'string',
+        description: 'Notebook ID containing the document',
+      },
+      path: {
+        type: 'string',
+        description: 'Document path (e.g., /folder/note)',
+      },
+      new_name: {
+        type: 'string',
+        description: 'New document title',
+      },
+    },
+    required: ['notebook_id', 'path', 'new_name'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<{ success: boolean; new_name: string }> {
+    await context.siyuan.document.renameDocument(args.notebook_id, args.path, args.new_name);
+    return { success: true, new_name: args.new_name };
+  }
+}
+
+/**
+ * 根据 ID 获取人类可读路径
+ */
+export class GetHumanPathByIdHandler extends BaseToolHandler<
+  { document_id: string },
+  { hpath: string }
+> {
+  readonly name = 'get_human_path_by_id';
+  readonly description = 'Get human-readable path by document ID';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      document_id: {
+        type: 'string',
+        description: 'Document ID (block ID)',
+      },
+    },
+    required: ['document_id'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<{ hpath: string }> {
+    const hpath = await context.siyuan.document.getHumanReadablePath(args.document_id);
+    return { hpath };
+  }
+}
+
+/**
+ * 根据路径获取人类可读路径
+ */
+export class GetHumanPathByPathHandler extends BaseToolHandler<
+  { notebook_id: string; path: string },
+  { hpath: string }
+> {
+  readonly name = 'get_human_path_by_path';
+  readonly description = 'Get human-readable path by notebook ID and storage path';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      notebook_id: {
+        type: 'string',
+        description: 'Notebook ID',
+      },
+      path: {
+        type: 'string',
+        description: 'Document storage path (e.g., /folder/note)',
+      },
+    },
+    required: ['notebook_id', 'path'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<{ hpath: string }> {
+    const hpath = await context.siyuan.document.getHumanReadablePathByPath(
+      args.notebook_id,
+      args.path
+    );
+    return { hpath };
+  }
+}
+
+/**
+ * 根据 ID 获取存储路径
+ */
+export class GetPathByIdHandler extends BaseToolHandler<
+  { document_id: string },
+  { path: string }
+> {
+  readonly name = 'get_path_by_id';
+  readonly description = 'Get storage path by document ID';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      document_id: {
+        type: 'string',
+        description: 'Document ID (block ID)',
+      },
+    },
+    required: ['document_id'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<{ path: string }> {
+    const path = await context.siyuan.document.getPathById(args.document_id);
+    return { path };
+  }
+}
+
+/**
+ * 根据人类可读路径获取文档 ID
+ */
+export class GetIdsByHPathHandler extends BaseToolHandler<
+  { notebook_id: string; path: string },
+  { ids: string[] }
+> {
+  readonly name = 'get_ids_by_hpath';
+  readonly description = 'Get document IDs by human-readable path';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      notebook_id: {
+        type: 'string',
+        description: 'Notebook ID',
+      },
+      path: {
+        type: 'string',
+        description: 'Human-readable path (e.g., /Folder/Note)',
+      },
+    },
+    required: ['notebook_id', 'path'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<{ ids: string[] }> {
+    const ids = await context.siyuan.document.getDocIdsByPath(args.notebook_id, args.path);
+    return { ids };
+  }
+}

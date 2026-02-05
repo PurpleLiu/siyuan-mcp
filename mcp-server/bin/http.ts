@@ -40,6 +40,10 @@ function parseArgs(): Partial<ServerConfig> & { port?: number } {
           config.port = parseInt(args[++i]);
         }
         break;
+      case '--verbose':
+      case '--debug':
+        config.verbose = true;
+        break;
       case '--help':
       case '-h':
         printHelp();
@@ -66,6 +70,7 @@ Required:
 Options:
   --baseUrl <string>    SiYuan base URL (default: http://127.0.0.1:6806)
   --port, -p <number>   HTTP server port (default: 3000)
+  --verbose, --debug    Enable verbose logging
   --help, -h            Show this help message
 
 Example:
@@ -106,9 +111,14 @@ async function parseRequestBody(req: IncomingMessage): Promise<unknown> {
 async function main() {
   const config = parseArgs();
 
+  // 从环境变量读取默认值
+  config.token = config.token || process.env.SIYUAN_TOKEN;
+  config.baseUrl = config.baseUrl || process.env.SIYUAN_BASE_URL;
+  config.verbose = config.verbose || process.env.SIYUAN_VERBOSE === '1' || process.env.SIYUAN_DEBUG === '1';
+
   // 验证必需参数
   if (!config.token) {
-    console.error('Error: --token is required\n');
+    console.error('Error: --token is required (or set SIYUAN_TOKEN)\n');
     printHelp();
     process.exit(1);
   }
@@ -119,6 +129,7 @@ async function main() {
     baseUrl: config.baseUrl || 'http://127.0.0.1:6806',
     name: 'siyuan-mcp-server-http',
     version: '0.1.0',
+    verbose: config.verbose,
   };
 
   const port = config.port || 3000;

@@ -173,7 +173,7 @@ export class SiyuanDocumentApi {
   }
 
   /**
-   * 获取人类可读的文档路径
+   * 获取人类可读的文档路径（通过 ID）
    * @param blockId 块 ID
    * @returns 人类可读路径
    */
@@ -186,6 +186,38 @@ export class SiyuanDocumentApi {
     );
 
     return response.data.hPath;
+  }
+
+  /**
+   * 根据文档路径获取人类可读路径
+   * @param notebookId 笔记本 ID
+   * @param path 文档存储路径（如 /foo/bar）
+   */
+  async getHumanReadablePathByPath(notebookId: string, path: string): Promise<string> {
+    const response = await this.client.request<{ hPath: string }>(
+      '/api/filetree/getHPathByPath',
+      {
+        notebook: notebookId,
+        path: path,
+      }
+    );
+
+    return response.data.hPath;
+  }
+
+  /**
+   * 根据文档 ID 获取存储路径
+   * @param blockId 块 ID（文档 ID）
+   */
+  async getPathById(blockId: string): Promise<string> {
+    const response = await this.client.request<{ path: string }>(
+      '/api/filetree/getPathByID',
+      {
+        id: blockId,
+      }
+    );
+
+    return response.data.path;
   }
 
   /**

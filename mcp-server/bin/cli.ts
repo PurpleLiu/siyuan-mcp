@@ -34,9 +34,10 @@ Modes:
   http                Run in HTTP/SSE mode (for web clients)
 
 Options:
-  --token <string>    SiYuan API token (required)
+  --token <string>    SiYuan API token (required, or set SIYUAN_TOKEN)
   --baseUrl <url>     SiYuan server URL (default: http://127.0.0.1:6806)
   --port, -p <num>    HTTP server port (default: 3000, HTTP mode only)
+  --verbose, --debug  Enable verbose logging
   --help, -h          Show this help message
   --version, -v       Show version
 

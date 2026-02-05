@@ -16,6 +16,8 @@ export interface ServerConfig {
   name?: string;
   /** 服务器版本 */
   version?: string;
+  /** 详细日志 */
+  verbose?: boolean;
 }
 
 /**

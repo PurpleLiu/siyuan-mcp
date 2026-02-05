@@ -5,6 +5,18 @@
 
 import type { SiyuanApiResponse, SiyuanConfig } from '../types/index.js';
 
+export class SiyuanApiError extends Error {
+  constructor(
+    message: string,
+    public readonly endpoint: string,
+    public readonly code?: number,
+    public readonly status?: number
+  ) {
+    super(message);
+    this.name = 'SiyuanApiError';
+  }
+}
+
 export class SiyuanClient {
   private config: SiyuanConfig;
 
@@ -20,6 +32,10 @@ export class SiyuanClient {
    */
   async request<T = any>(endpoint: string, data?: any): Promise<SiyuanApiResponse<T>> {
     try {
+      if (this.config.verbose) {
+        console.error('[SiYuan-MCP] [DEBUG] Request', endpoint, data ? { ...data } : undefined);
+      }
+
       const response = await fetch(`${this.config.baseUrl}${endpoint}`, {
         method: 'POST',
         headers: {
@@ -30,13 +46,41 @@ export class SiyuanClient {
       });
 
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        throw new SiyuanApiError(
+          `HTTP ${response.status} ${response.statusText}`,
+          endpoint,
+          undefined,
+          response.status
+        );
       }
 
-      return (await response.json()) as SiyuanApiResponse<T>;
+      const json = (await response.json()) as SiyuanApiResponse<T>;
+
+      if (this.config.verbose) {
+        console.error('[SiYuan-MCP] [DEBUG] Response', endpoint, {
+          code: json.code,
+          msg: json.msg,
+        });
+      }
+
+      if (json.code !== 0) {
+        throw new SiyuanApiError(
+          `API error (code ${json.code}): ${json.msg || 'Unknown error'}`,
+          endpoint,
+          json.code,
+          response.status
+        );
+      }
+
+      return json;
     } catch (error) {
-      throw new Error(
-        `Failed to request ${endpoint}: ${error instanceof Error ? error.message : String(error)}`
+      if (error instanceof SiyuanApiError) {
+        throw error;
+      }
+
+      throw new SiyuanApiError(
+        `Request failed: ${error instanceof Error ? error.message : String(error)}`,
+        endpoint
       );
     }
   }
