@@ -97,3 +97,70 @@ export class RollbackSnapshotHandler extends BaseToolHandler<
     };
   }
 }
+
+/**
+ * 自动快照
+ */
+export class AutoSnapshotHandler extends BaseToolHandler<
+  { memo_prefix?: string; tag_prefix?: string },
+  { snapshot: any; tag: string }
+> {
+  readonly name = 'auto_snapshot';
+  readonly description = 'Create an auto snapshot with a generated timestamp tag';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      memo_prefix: {
+        type: 'string',
+        description: 'Optional memo prefix (default: "Auto snapshot")',
+      },
+      tag_prefix: {
+        type: 'string',
+        description: 'Optional tag prefix (default: "auto")',
+      },
+    },
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<{ snapshot: any; tag: string }> {
+    return await context.siyuan.snapshot.autoSnapshot({
+      memoPrefix: args.memo_prefix,
+      tagPrefix: args.tag_prefix,
+    });
+  }
+}
+
+/**
+ * 清理旧的带标签快照
+ */
+export class CleanupSnapshotsHandler extends BaseToolHandler<
+  { tag_prefix?: string; keep_latest?: number; max_age_days?: number },
+  any
+> {
+  readonly name = 'cleanup_snapshots';
+  readonly description = 'Cleanup old tagged snapshots by prefix, age, and retention count';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      tag_prefix: {
+        type: 'string',
+        description: 'Tag prefix to filter (default: "auto")',
+      },
+      keep_latest: {
+        type: 'number',
+        description: 'How many latest snapshots to keep (default: 5)',
+      },
+      max_age_days: {
+        type: 'number',
+        description: 'Max age in days to keep (default: 30)',
+      },
+    },
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<any> {
+    return await context.siyuan.snapshot.cleanupTaggedSnapshots({
+      tagPrefix: args.tag_prefix,
+      keepLatest: args.keep_latest,
+      maxAgeDays: args.max_age_days,
+    });
+  }
+}

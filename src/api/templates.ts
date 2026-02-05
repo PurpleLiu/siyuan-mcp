@@ -3,6 +3,7 @@
  */
 
 import type { SiyuanClient } from './client.js';
+import { requireNonEmptyString } from '../utils/validation.js';
 
 export class SiyuanTemplateApi {
   constructor(private client: SiyuanClient) {}
@@ -13,6 +14,8 @@ export class SiyuanTemplateApi {
    * @param data 模板参数
    */
   async renderTemplate(templateId: string, data?: Record<string, any>): Promise<string> {
+    requireNonEmptyString(templateId, 'templateId');
+
     const response = await this.client.request<{ content: string }>('/api/template/render', {
       id: templateId,
       data,
@@ -31,6 +34,8 @@ export class SiyuanTemplateApi {
    * @param data 模板参数
    */
   async renderSprig(template: string, data?: Record<string, any>): Promise<string> {
+    requireNonEmptyString(template, 'template');
+
     const response = await this.client.request<{ content: string }>('/api/template/renderSprig', {
       template,
       data,

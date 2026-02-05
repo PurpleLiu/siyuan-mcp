@@ -8,7 +8,7 @@ PurpleLiu 維護的 SiYuan MCP 伺服器，讓 AI 工具透過 **Model Context P
 
 ## 功能亮點
 
-- **15 個工具** 覆蓋搜尋、文件、筆記本、今日筆記、快照與標籤
+- **66 個工具** 覆蓋搜尋、文件、筆記本、區塊、今日筆記、快照與標籤
 - **統一搜尋** — 內容、檔名、標籤與組合條件
 - **文件樹** — 以深度瀏覽筆記本階層
 - **今日筆記** — 不存在即自動建立
@@ -76,13 +76,19 @@ Config 路徑：
 | 分類 | Tool | 說明 |
 |------|------|------|
 | 🔍 Search | `unified_search` | 以內容/檔名/標籤或組合搜尋 |
+| | `smart_search` | 智慧搜尋（模糊匹配 + 相關性排序） |
+| | `full_text_search_blocks` | 官方全文搜索（支援排序/分頁/路徑） |
 | 📄 Documents | `get_document_content` | 讀取文件內容（分頁） |
 | | `create_document` | 建立新文件 |
+| | `batch_create_documents` | 批次建立文件 |
 | | `append_to_document` | 追加內容 |
 | | `update_document` | 覆寫內容 |
-| | `remove_document` | 刪除文件 |
-| | `rename_document` | 重新命名文件 |
-| | `move_documents` | 移動文件 |
+| | `remove_document` | 刪除文件（路徑） |
+| | `remove_document_by_id` | 刪除文件（ID） |
+| | `rename_document` | 重新命名文件（路徑） |
+| | `rename_document_by_id` | 重新命名文件（ID） |
+| | `move_documents` | 移動文件（ID） |
+| | `move_documents_by_path` | 移動文件（路徑） |
 | | `get_document_tree` | 依深度取得文件樹 |
 | | `get_human_path_by_id` | 以文件 ID 取得人類可讀路徑 |
 | | `get_human_path_by_path` | 以存儲路徑取得人類可讀路徑 |
@@ -91,6 +97,7 @@ Config 路徑：
 | 📅 Daily Notes | `append_to_daily_note` | 追加到今日筆記 |
 | 📚 Notebooks | `list_notebooks` | 列出筆記本 |
 | | `get_recently_updated_documents` | 最近更新文件 |
+| | `get_notebook_by_id` | 取得筆記本資訊 |
 | | `create_notebook` | 建立筆記本 |
 | | `open_notebook` | 開啟筆記本 |
 | | `close_notebook` | 關閉筆記本 |
@@ -104,12 +111,9 @@ Config 路徑：
 | | `unfold_block` | 展開區塊 |
 | | `get_child_blocks` | 取得子區塊 |
 | | `transfer_block_ref` | 轉移區塊引用 |
-| 🧱 Blocks | `delete_block` | 刪除區塊 |
-| | `move_block` | 移動區塊 |
-| | `fold_block` | 摺疊區塊 |
-| | `unfold_block` | 展開區塊 |
-| | `get_child_blocks` | 取得子區塊 |
-| | `transfer_block_ref` | 轉移區塊引用 |
+| | `prepend_block` | 前置插入區塊 |
+| | `get_block_breadcrumb` | 取得區塊面包屑 |
+| | `get_block_info` | 取得區塊資訊 |
 | 🧩 Attributes | `get_block_attrs` | 取得區塊屬性 |
 | | `set_block_attrs` | 設定區塊屬性 |
 | 🧮 SQL | `execute_sql` | 執行 SQL 查詢 |
@@ -132,8 +136,11 @@ Config 路徑：
 | 📸 Snapshots | `create_snapshot` | 建立快照 |
 | | `list_snapshots` | 列出快照 |
 | | `rollback_to_snapshot` | 回滾快照 |
+| | `auto_snapshot` | 自動快照（自動標記） |
+| | `cleanup_snapshots` | 清理舊快照（按標記/年齡/保留數） |
 | 🏷️ Tags | `list_all_tags` | 列出所有標籤（支援前綴/深度） |
-| | `batch_replace_tag` | 批次替換或移除標籤 |
+| | `batch_replace_tag` | 批次替換或移除單一標籤 |
+| | `batch_replace_tags` | 批次替換多個標籤 |
 
 ## 使用示例
 

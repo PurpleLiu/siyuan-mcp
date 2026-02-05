@@ -3,6 +3,7 @@
  */
 
 import type { SiyuanClient } from './client.js';
+import { requireNonEmptyArray, requireNonEmptyString } from '../utils/validation.js';
 
 export class SiyuanExportApi {
   constructor(private client: SiyuanClient) {}
@@ -12,6 +13,8 @@ export class SiyuanExportApi {
    * @param blockId 文档/块 ID
    */
   async exportMarkdown(blockId: string): Promise<any> {
+    requireNonEmptyString(blockId, 'blockId');
+
     const response = await this.client.request('/api/export/exportMd', { id: blockId });
     if (response.code !== 0) {
       throw new Error(`Failed to export markdown: ${response.msg}`);
@@ -24,6 +27,8 @@ export class SiyuanExportApi {
    * @param paths 路径数组
    */
   async exportFiles(paths: string[]): Promise<any> {
+    requireNonEmptyArray(paths, 'paths');
+
     const response = await this.client.request('/api/export/exportFiles', { paths });
     if (response.code !== 0) {
       throw new Error(`Failed to export files: ${response.msg}`);

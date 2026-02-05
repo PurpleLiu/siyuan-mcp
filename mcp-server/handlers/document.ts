@@ -100,6 +100,45 @@ export class CreateDocumentHandler extends BaseToolHandler<
 }
 
 /**
+ * 批量创建文档
+ */
+export class BatchCreateDocumentsHandler extends BaseToolHandler<
+  { items: Array<{ notebook_id: string; path: string; content: string }> },
+  any
+> {
+  readonly name = 'batch_create_documents';
+  readonly description = 'Create multiple documents in bulk. Returns per-item success and errors';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      items: {
+        type: 'array',
+        description: 'Array of documents to create',
+        items: {
+          type: 'object',
+          properties: {
+            notebook_id: { type: 'string', description: 'Notebook ID' },
+            path: { type: 'string', description: 'Document path' },
+            content: { type: 'string', description: 'Markdown content' },
+          },
+          required: ['notebook_id', 'path', 'content'],
+        },
+      },
+    },
+    required: ['items'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<any> {
+    const items = (args.items || []).map((item: any) => ({
+      notebookId: item.notebook_id,
+      path: item.path,
+      markdown: item.content,
+    }));
+    return await context.siyuan.document.createDocuments(items);
+  }
+}
+
+/**
  * 追加到文档
  */
 export class AppendToDocumentHandler extends BaseToolHandler<
@@ -269,6 +308,41 @@ export class MoveDocumentsHandler extends BaseToolHandler<
 }
 
 /**
+ * 通过路径批量移动文档
+ */
+export class MoveDocumentsByPathHandler extends BaseToolHandler<
+  { from_paths: string[]; to_notebook_id: string; to_path: string },
+  { success: boolean; moved_count: number }
+> {
+  readonly name = 'move_documents_by_path';
+  readonly description = 'Move documents by storage paths to a target notebook path';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      from_paths: {
+        type: 'array',
+        items: { type: 'string' },
+        description: 'Source document paths (e.g., /folder/note)',
+      },
+      to_notebook_id: {
+        type: 'string',
+        description: 'Target notebook ID',
+      },
+      to_path: {
+        type: 'string',
+        description: 'Target path (e.g., / or /target/folder)',
+      },
+    },
+    required: ['from_paths', 'to_notebook_id', 'to_path'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<{ success: boolean; moved_count: number }> {
+    await context.siyuan.document.moveDocumentsByPath(args.from_paths, args.to_notebook_id, args.to_path);
+    return { success: true, moved_count: args.from_paths.length };
+  }
+}
+
+/**
  * 获取文档树
  */
 export class GetDocumentTreeHandler extends BaseToolHandler<
@@ -330,6 +404,32 @@ export class RemoveDocumentHandler extends BaseToolHandler<
 }
 
 /**
+ * 通过 ID 删除文档
+ */
+export class RemoveDocumentByIdHandler extends BaseToolHandler<
+  { document_id: string },
+  { success: boolean }
+> {
+  readonly name = 'remove_document_by_id';
+  readonly description = 'Remove a document by document ID (dangerous operation)';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      document_id: {
+        type: 'string',
+        description: 'Document ID (block ID)',
+      },
+    },
+    required: ['document_id'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<{ success: boolean }> {
+    await context.siyuan.document.removeDocumentById(args.document_id);
+    return { success: true };
+  }
+}
+
+/**
  * 重命名文档
  */
 export class RenameDocumentHandler extends BaseToolHandler<
@@ -359,6 +459,36 @@ export class RenameDocumentHandler extends BaseToolHandler<
 
   async execute(args: any, context: ExecutionContext): Promise<{ success: boolean; new_name: string }> {
     await context.siyuan.document.renameDocument(args.notebook_id, args.path, args.new_name);
+    return { success: true, new_name: args.new_name };
+  }
+}
+
+/**
+ * 通过 ID 重命名文档
+ */
+export class RenameDocumentByIdHandler extends BaseToolHandler<
+  { document_id: string; new_name: string },
+  { success: boolean; new_name: string }
+> {
+  readonly name = 'rename_document_by_id';
+  readonly description = 'Rename a document by document ID';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      document_id: {
+        type: 'string',
+        description: 'Document ID (block ID)',
+      },
+      new_name: {
+        type: 'string',
+        description: 'New document title',
+      },
+    },
+    required: ['document_id', 'new_name'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<{ success: boolean; new_name: string }> {
+    await context.siyuan.document.renameDocumentById(args.document_id, args.new_name);
     return { success: true, new_name: args.new_name };
   }
 }

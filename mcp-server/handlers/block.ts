@@ -127,3 +127,62 @@ export class TransferBlockRefHandler extends BaseToolHandler<
     return { success: true };
   }
 }
+
+export class PrependBlockHandler extends BaseToolHandler<
+  { parent_id: string; content: string },
+  { block_id: string }
+> {
+  readonly name = 'prepend_block';
+  readonly description = 'Prepend a new block as the first child under a parent block';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      parent_id: { type: 'string', description: 'Parent block ID' },
+      content: { type: 'string', description: 'Markdown content of the new block' },
+    },
+    required: ['parent_id', 'content'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<{ block_id: string }> {
+    const id = await context.siyuan.block.prependBlock(args.parent_id, args.content);
+    return { block_id: id };
+  }
+}
+
+export class GetBlockBreadcrumbHandler extends BaseToolHandler<
+  { block_id: string },
+  any
+> {
+  readonly name = 'get_block_breadcrumb';
+  readonly description = 'Get breadcrumb path for a block';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      block_id: { type: 'string', description: 'Block ID' },
+    },
+    required: ['block_id'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<any> {
+    return await context.siyuan.block.getBlockBreadcrumb(args.block_id);
+  }
+}
+
+export class GetBlockInfoHandler extends BaseToolHandler<
+  { block_id: string },
+  any
+> {
+  readonly name = 'get_block_info';
+  readonly description = 'Get basic metadata for a block';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      block_id: { type: 'string', description: 'Block ID' },
+    },
+    required: ['block_id'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<any> {
+    return await context.siyuan.block.getBlockInfo(args.block_id);
+  }
+}

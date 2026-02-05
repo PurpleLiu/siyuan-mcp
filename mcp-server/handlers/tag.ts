@@ -68,3 +68,40 @@ export class ReplaceTagHandler extends BaseToolHandler<
     return await context.siyuan.tag.replaceTag(oldTag, newTag);
   }
 }
+
+/**
+ * 批量替换标签
+ */
+export class BatchReplaceTagsHandler extends BaseToolHandler<
+  { items: Array<{ old_tag: string; new_tag: string }> },
+  any
+> {
+  readonly name = 'batch_replace_tags';
+  readonly description =
+    'Batch replace or remove multiple tags across all notes. Each item includes old_tag and new_tag (empty new_tag removes)';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      items: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            old_tag: { type: 'string', description: 'Old tag to replace' },
+            new_tag: { type: 'string', description: 'New tag (empty to remove)' },
+          },
+          required: ['old_tag', 'new_tag'],
+        },
+      },
+    },
+    required: ['items'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<any> {
+    const items = (args.items || []).map((item: any) => ({
+      oldTag: item.old_tag,
+      newTag: item.new_tag,
+    }));
+    return await context.siyuan.tag.batchReplaceTags(items);
+  }
+}

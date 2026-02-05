@@ -8,7 +8,7 @@ Compatible with Claude Desktop, Cursor, OpenClaw, and any MCP-compatible client.
 
 ## Features
 
-- **15 tools** covering search, documents, notebooks, daily notes, snapshots, and tags
+- **66 tools** covering search, documents, blocks, notebooks, daily notes, snapshots, and tags
 - **Unified search** — content, filename, tag, or combined filters
 - **Document tree** — browse notebook hierarchy by depth
 - **Daily notes** — auto-create today’s note if it doesn’t exist

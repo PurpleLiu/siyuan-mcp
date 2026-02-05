@@ -3,6 +3,7 @@
  */
 
 import type { SiyuanClient } from './client.js';
+import { requireNonEmptyString } from '../utils/validation.js';
 
 export class SiyuanAttributeApi {
   constructor(private client: SiyuanClient) {}
@@ -13,6 +14,8 @@ export class SiyuanAttributeApi {
    * @param attrs 属性对象
    */
   async setBlockAttrs(blockId: string, attrs: Record<string, string>): Promise<void> {
+    requireNonEmptyString(blockId, 'blockId');
+
     const response = await this.client.request('/api/attr/setBlockAttrs', {
       id: blockId,
       attrs,
@@ -28,6 +31,8 @@ export class SiyuanAttributeApi {
    * @param blockId 块 ID
    */
   async getBlockAttrs(blockId: string): Promise<Record<string, string>> {
+    requireNonEmptyString(blockId, 'blockId');
+
     const response = await this.client.request<Record<string, string>>(
       '/api/attr/getBlockAttrs',
       { id: blockId }

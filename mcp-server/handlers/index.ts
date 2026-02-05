@@ -48,17 +48,23 @@ export * from './tag.js';
 
 import {
   UnifiedSearchHandler,
+  SmartSearchHandler,
+  FullTextSearchBlocksHandler,
 } from './search.js';
 import {
   GetDocumentContentHandler,
   CreateDocumentHandler,
+  BatchCreateDocumentsHandler,
   AppendToDocumentHandler,
   UpdateDocumentHandler,
   AppendToDailyNoteHandler,
   MoveDocumentsHandler,
+  MoveDocumentsByPathHandler,
   GetDocumentTreeHandler,
   RemoveDocumentHandler,
+  RemoveDocumentByIdHandler,
   RenameDocumentHandler,
+  RenameDocumentByIdHandler,
   GetHumanPathByIdHandler,
   GetHumanPathByPathHandler,
   GetPathByIdHandler,
@@ -74,6 +80,7 @@ import {
   RemoveNotebookHandler,
   GetNotebookConfHandler,
   SetNotebookConfHandler,
+  GetNotebookByIdHandler,
 } from './notebook.js';
 import {
   DeleteBlockHandler,
@@ -82,6 +89,9 @@ import {
   UnfoldBlockHandler,
   GetChildBlocksHandler,
   TransferBlockRefHandler,
+  PrependBlockHandler,
+  GetBlockBreadcrumbHandler,
+  GetBlockInfoHandler,
 } from './block.js';
 import {
   GetBlockAttrsHandler,
@@ -122,10 +132,13 @@ import {
   CreateSnapshotHandler,
   ListSnapshotsHandler,
   RollbackSnapshotHandler,
+  AutoSnapshotHandler,
+  CleanupSnapshotsHandler,
 } from './snapshot.js';
 import {
   ListAllTagsHandler,
   ReplaceTagHandler,
+  BatchReplaceTagsHandler,
 } from './tag.js';
 
 // 工厂函数：创建所有处理器实例
@@ -133,17 +146,23 @@ export function createAllHandlers() {
   return [
     // 搜索
     new UnifiedSearchHandler(), // 统一搜索
+    new SmartSearchHandler(),
+    new FullTextSearchBlocksHandler(),
 
     // 文档
     new GetDocumentContentHandler(),
     new CreateDocumentHandler(),
+    new BatchCreateDocumentsHandler(),
     new AppendToDocumentHandler(),
     new UpdateDocumentHandler(),
     new AppendToDailyNoteHandler(),
     new MoveDocumentsHandler(),
+    new MoveDocumentsByPathHandler(),
     new GetDocumentTreeHandler(),
     new RemoveDocumentHandler(),
+    new RemoveDocumentByIdHandler(),
     new RenameDocumentHandler(),
+    new RenameDocumentByIdHandler(),
     new GetHumanPathByIdHandler(),
     new GetHumanPathByPathHandler(),
     new GetPathByIdHandler(),
@@ -159,6 +178,7 @@ export function createAllHandlers() {
     new RemoveNotebookHandler(),
     new GetNotebookConfHandler(),
     new SetNotebookConfHandler(),
+    new GetNotebookByIdHandler(),
 
     // 块
     new DeleteBlockHandler(),
@@ -167,6 +187,9 @@ export function createAllHandlers() {
     new UnfoldBlockHandler(),
     new GetChildBlocksHandler(),
     new TransferBlockRefHandler(),
+    new PrependBlockHandler(),
+    new GetBlockBreadcrumbHandler(),
+    new GetBlockInfoHandler(),
 
     // 属性
     new GetBlockAttrsHandler(),
@@ -207,9 +230,12 @@ export function createAllHandlers() {
     new CreateSnapshotHandler(),
     new ListSnapshotsHandler(),
     new RollbackSnapshotHandler(),
+    new AutoSnapshotHandler(),
+    new CleanupSnapshotsHandler(),
 
     // 标签
     new ListAllTagsHandler(),
     new ReplaceTagHandler(),
+    new BatchReplaceTagsHandler(),
   ];
 }

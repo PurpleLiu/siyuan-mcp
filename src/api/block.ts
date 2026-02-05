@@ -3,6 +3,8 @@
  */
 
 import type { SiyuanClient } from './client.js';
+import type { BlockBreadcrumbResponse, BlockInfoResponse } from '../types/index.js';
+import { requireNonEmptyString } from '../utils/validation.js';
 
 export class SiyuanBlockApi {
   constructor(private client: SiyuanClient) {}
@@ -13,6 +15,8 @@ export class SiyuanBlockApi {
    * @returns 块内容
    */
   async getBlockKramdown(blockId: string): Promise<string> {
+    requireNonEmptyString(blockId, 'blockId');
+
     const response = await this.client.request<{ id: string; kramdown: string }>(
       '/api/block/getBlockKramdown',
       { id: blockId }
@@ -26,6 +30,8 @@ export class SiyuanBlockApi {
    * @returns Markdown 内容（纯净内容，不含元信息）
    */
   async getBlockMarkdown(blockId: string): Promise<string> {
+    requireNonEmptyString(blockId, 'blockId');
+
     const response = await this.client.request<{ content: string }>(
       '/api/export/exportMdContent',
       { id: blockId }
@@ -40,6 +46,9 @@ export class SiyuanBlockApi {
    * @returns 操作结果
    */
   async updateBlock(blockId: string, content: string): Promise<void> {
+    requireNonEmptyString(blockId, 'blockId');
+    requireNonEmptyString(content, 'content');
+
     const response = await this.client.request('/api/block/updateBlock', {
       id: blockId,
       dataType: 'markdown',
@@ -58,6 +67,9 @@ export class SiyuanBlockApi {
    * @returns 新创建的块 ID
    */
   async appendBlock(parentId: string, content: string): Promise<string> {
+    requireNonEmptyString(parentId, 'parentId');
+    requireNonEmptyString(content, 'content');
+
     interface BlockOperation {
       doOperations: Array<{ id: string; action: string }>;
     }
@@ -84,6 +96,9 @@ export class SiyuanBlockApi {
    * @returns 新创建的块 ID
    */
   async insertBlockBefore(previousId: string, content: string): Promise<string> {
+    requireNonEmptyString(previousId, 'previousId');
+    requireNonEmptyString(content, 'content');
+
     interface BlockOperation {
       doOperations: Array<{ id: string; action: string }>;
     }
@@ -110,6 +125,9 @@ export class SiyuanBlockApi {
    * @returns 新创建的块 ID
    */
   async insertBlockAfter(nextId: string, content: string): Promise<string> {
+    requireNonEmptyString(nextId, 'nextId');
+    requireNonEmptyString(content, 'content');
+
     interface BlockOperation {
       doOperations: Array<{ id: string; action: string }>;
     }
@@ -134,6 +152,8 @@ export class SiyuanBlockApi {
    * @param blockId 块 ID
    */
   async deleteBlock(blockId: string): Promise<void> {
+    requireNonEmptyString(blockId, 'blockId');
+
     const response = await this.client.request('/api/block/deleteBlock', { id: blockId });
 
     if (response.code !== 0) {
@@ -148,6 +168,8 @@ export class SiyuanBlockApi {
    * @param parentId 目标父块 ID（可选）
    */
   async moveBlock(blockId: string, previousId?: string, parentId?: string): Promise<void> {
+    requireNonEmptyString(blockId, 'blockId');
+
     const response = await this.client.request('/api/block/moveBlock', {
       id: blockId,
       previousID: previousId,
@@ -164,6 +186,8 @@ export class SiyuanBlockApi {
    * @param blockId 块 ID
    */
   async foldBlock(blockId: string): Promise<void> {
+    requireNonEmptyString(blockId, 'blockId');
+
     const response = await this.client.request('/api/block/foldBlock', { id: blockId });
 
     if (response.code !== 0) {
@@ -176,6 +200,8 @@ export class SiyuanBlockApi {
    * @param blockId 块 ID
    */
   async unfoldBlock(blockId: string): Promise<void> {
+    requireNonEmptyString(blockId, 'blockId');
+
     const response = await this.client.request('/api/block/unfoldBlock', { id: blockId });
 
     if (response.code !== 0) {
@@ -188,6 +214,8 @@ export class SiyuanBlockApi {
    * @param blockId 块 ID
    */
   async getChildBlocks(blockId: string): Promise<any[]> {
+    requireNonEmptyString(blockId, 'blockId');
+
     const response = await this.client.request<any[]>('/api/block/getChildBlocks', { id: blockId });
 
     if (response.code !== 0) {
@@ -203,6 +231,9 @@ export class SiyuanBlockApi {
    * @param toId 目标块 ID
    */
   async transferBlockRef(fromId: string, toId: string): Promise<void> {
+    requireNonEmptyString(fromId, 'fromId');
+    requireNonEmptyString(toId, 'toId');
+
     const response = await this.client.request('/api/block/transferBlockRef', {
       fromID: fromId,
       toID: toId,
@@ -212,5 +243,59 @@ export class SiyuanBlockApi {
       throw new Error(`Failed to transfer block reference: ${response.msg}`);
     }
   }
-}
 
+  /**
+   * 在父块下插入块（前置）
+   */
+  async prependBlock(parentId: string, content: string): Promise<string> {
+    requireNonEmptyString(parentId, 'parentId');
+    requireNonEmptyString(content, 'content');
+
+    interface BlockOperation {
+      doOperations: Array<{ id: string; action: string }>;
+    }
+
+    const response = await this.client.request<BlockOperation[]>(
+      '/api/block/prependBlock',
+      {
+        parentID: parentId,
+        dataType: 'markdown',
+        data: content,
+      }
+    );
+
+    if (response.code !== 0) {
+      throw new Error(`Failed to prepend block: ${response.msg}`);
+    }
+
+    return response.data[0].doOperations[0].id;
+  }
+
+  /**
+   * 获取块面包屑
+   */
+  async getBlockBreadcrumb(blockId: string): Promise<BlockBreadcrumbResponse> {
+    requireNonEmptyString(blockId, 'blockId');
+
+    const response = await this.client.request<BlockBreadcrumbResponse>(
+      '/api/block/getBlockBreadcrumb',
+      { id: blockId }
+    );
+
+    return response.data;
+  }
+
+  /**
+   * 获取块基础信息
+   */
+  async getBlockInfo(blockId: string): Promise<BlockInfoResponse> {
+    requireNonEmptyString(blockId, 'blockId');
+
+    const response = await this.client.request<BlockInfoResponse>(
+      '/api/block/getBlockInfo',
+      { id: blockId }
+    );
+
+    return response.data;
+  }
+}

@@ -4,6 +4,8 @@
  */
 
 import type { SiyuanClient } from './client.js';
+import type { BatchOperationResult } from '../types/enhanced.js';
+import { requireNonEmptyArray, requireNonEmptyString } from '../utils/validation.js';
 
 export class SiyuanTagApi {
   constructor(private client: SiyuanClient) {}
@@ -46,5 +48,34 @@ export class SiyuanTagApi {
    */
   async removeTag(tag: string): Promise<boolean> {
     return this.replaceTag(tag, '');
+  }
+
+  /**
+   * 批量替换/移除标签
+   */
+  async batchReplaceTags(
+    items: Array<{ oldTag: string; newTag: string }>
+  ): Promise<BatchOperationResult> {
+    requireNonEmptyArray(items, 'items');
+
+    const results = await Promise.all(
+      items.map(async (item) => {
+        try {
+          requireNonEmptyString(item.oldTag, 'oldTag');
+          const success = await this.replaceTag(item.oldTag, item.newTag || '');
+          return { success, id: item.oldTag };
+        } catch (error) {
+          return { success: false, id: item.oldTag, error: error instanceof Error ? error.message : String(error) };
+        }
+      })
+    );
+
+    const successCount = results.filter((r) => r.success).length;
+    return {
+      total: results.length,
+      success: successCount,
+      failed: results.length - successCount,
+      results,
+    };
   }
 }

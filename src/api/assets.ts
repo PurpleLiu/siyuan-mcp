@@ -3,6 +3,7 @@
  */
 
 import type { SiyuanClient } from './client.js';
+import { requireNonEmptyString } from '../utils/validation.js';
 
 export class SiyuanAssetApi {
   constructor(private client: SiyuanClient) {}
@@ -13,6 +14,9 @@ export class SiyuanAssetApi {
    * @param base64 Base64 内容（不含 data: 前缀）
    */
   async uploadAssetBase64(filename: string, base64: string): Promise<any> {
+    requireNonEmptyString(filename, 'filename');
+    requireNonEmptyString(base64, 'base64');
+
     const { baseUrl, token } = this.client.getConfig();
     const buffer = Buffer.from(base64, 'base64');
 

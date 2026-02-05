@@ -4,6 +4,7 @@
 
 import type { SiyuanClient } from './client.js';
 import type { Notebook, NotebookConf, NotebookResponse } from '../types/index.js';
+import { requireNonEmptyString } from '../utils/validation.js';
 
 export class SiyuanNotebookApi {
   constructor(private client: SiyuanClient) {}
@@ -37,6 +38,8 @@ export class SiyuanNotebookApi {
    * @returns 笔记本配置
    */
   async getNotebookConf(notebookId: string): Promise<NotebookConf> {
+    requireNonEmptyString(notebookId, 'notebookId');
+
     const response = await this.client.request<{ conf: NotebookConf }>(
       '/api/notebook/getNotebookConf',
       { notebook: notebookId }
@@ -55,6 +58,8 @@ export class SiyuanNotebookApi {
    * @param conf 笔记本配置
    */
   async setNotebookConf(notebookId: string, conf: Partial<NotebookConf>): Promise<void> {
+    requireNonEmptyString(notebookId, 'notebookId');
+
     const response = await this.client.request('/api/notebook/setNotebookConf', {
       notebook: notebookId,
       conf: conf,
@@ -70,6 +75,8 @@ export class SiyuanNotebookApi {
    * @param notebookId 笔记本 ID
    */
   async openNotebook(notebookId: string): Promise<void> {
+    requireNonEmptyString(notebookId, 'notebookId');
+
     const response = await this.client.request('/api/notebook/openNotebook', {
       notebook: notebookId,
     });
@@ -84,6 +91,8 @@ export class SiyuanNotebookApi {
    * @param notebookId 笔记本 ID
    */
   async closeNotebook(notebookId: string): Promise<void> {
+    requireNonEmptyString(notebookId, 'notebookId');
+
     const response = await this.client.request('/api/notebook/closeNotebook', {
       notebook: notebookId,
     });
@@ -99,6 +108,8 @@ export class SiyuanNotebookApi {
    * @returns 笔记本 ID
    */
   async createNotebook(name: string): Promise<string> {
+    requireNonEmptyString(name, 'name');
+
     const response = await this.client.request<{ notebook: { id: string } }>(
       '/api/notebook/createNotebook',
       { name }
@@ -116,6 +127,8 @@ export class SiyuanNotebookApi {
    * @param notebookId 笔记本 ID
    */
   async removeNotebook(notebookId: string): Promise<void> {
+    requireNonEmptyString(notebookId, 'notebookId');
+
     const response = await this.client.request('/api/notebook/removeNotebook', {
       notebook: notebookId,
     });
@@ -131,6 +144,9 @@ export class SiyuanNotebookApi {
    * @param name 新名称
    */
   async renameNotebook(notebookId: string, name: string): Promise<void> {
+    requireNonEmptyString(notebookId, 'notebookId');
+    requireNonEmptyString(name, 'name');
+
     const response = await this.client.request('/api/notebook/renameNotebook', {
       notebook: notebookId,
       name: name,
@@ -153,6 +169,24 @@ export class SiyuanNotebookApi {
     }
 
     return response.data || [];
+  }
+
+  /**
+   * 通过 ID 获取笔记本信息
+   */
+  async getNotebookById(notebookId: string): Promise<Notebook> {
+    requireNonEmptyString(notebookId, 'notebookId');
+
+    const response = await this.client.request<{ notebook: Notebook }>(
+      '/api/notebook/getNotebookByID',
+      { notebook: notebookId }
+    );
+
+    if (response.code !== 0) {
+      throw new Error(`Failed to get notebook by ID: ${response.msg}`);
+    }
+
+    return response.data.notebook;
   }
 
 }

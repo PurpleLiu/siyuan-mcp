@@ -3,8 +3,21 @@
  */
 
 import type { SiyuanClient } from './client.js';
-import type { Block, SearchOptions, SearchResultResponse, TagResponse } from '../types/index.js';
+import type {
+  Block,
+  FullTextSearchOptions,
+  FullTextSearchResponse,
+  SearchOptions,
+  SearchResultResponse,
+  TagResponse,
+} from '../types/index.js';
 import { extractTitle, truncateContent } from '../utils/format.js';
+import { requireNonEmptyString } from '../utils/validation.js';
+
+export interface SmartSearchOptions extends SearchOptions {
+  limit?: number;
+  includeContentPreview?: boolean;
+}
 
 export class SiyuanSearchApi {
   constructor(private client: SiyuanClient) {}
@@ -16,6 +29,8 @@ export class SiyuanSearchApi {
    * @returns 搜索结果响应
    */
   async searchByFileName(fileName: string, options: SearchOptions = {}): Promise<SearchResultResponse[]> {
+    requireNonEmptyString(fileName, 'fileName');
+
     const { limit = 10, notebook } = options;
 
     let stmt = `SELECT * FROM blocks WHERE type='d' AND content LIKE '%${this.escapeSql(fileName)}%'`;
@@ -38,6 +53,8 @@ export class SiyuanSearchApi {
    * @returns 搜索结果响应
    */
   async searchByContent(content: string, options: SearchOptions = {}): Promise<SearchResultResponse[]> {
+    requireNonEmptyString(content, 'content');
+
     const { limit = 10, notebook, types } = options;
 
     let stmt = `SELECT * FROM blocks WHERE content LIKE '%${this.escapeSql(content)}%'`;
@@ -64,8 +81,33 @@ export class SiyuanSearchApi {
    * @returns 查询结果
    */
   async query(sql: string): Promise<Block[]> {
+    requireNonEmptyString(sql, 'sql');
+
     const response = await this.client.request<Block[]>('/api/query/sql', { stmt: sql });
     return response.data || [];
+  }
+
+  /**
+   * 官方全文搜索 API（支持更多过滤条件与排序）
+   */
+  async fullTextSearch(options: FullTextSearchOptions): Promise<FullTextSearchResponse> {
+    requireNonEmptyString(options.query, 'query');
+
+    const response = await this.client.request<FullTextSearchResponse>(
+      '/api/search/fullTextSearchBlock',
+      {
+        query: options.query,
+        method: options.method || 'keyword',
+        types: options.types,
+        paths: options.paths,
+        orderBy: options.orderBy || 'rank',
+        groupBy: options.groupBy,
+        page: options.page ?? 1,
+        pageSize: options.pageSize ?? 50,
+      }
+    );
+
+    return response.data;
   }
 
 
@@ -150,6 +192,8 @@ export class SiyuanSearchApi {
    * @returns 搜索结果响应
    */
   async searchByTag(tag: string, limit: number = 50): Promise<SearchResultResponse[]> {
+    requireNonEmptyString(tag, 'tag');
+
     // 查询包含指定标签的块(文档类型)
     const cleanTag = tag.replace(/#/g, '').trim();
     const stmt = `SELECT * FROM blocks WHERE type='d' AND tag LIKE '%#${this.escapeSql(cleanTag)}#%' LIMIT ${limit}`;
@@ -219,9 +263,86 @@ export class SiyuanSearchApi {
   }
 
   /**
+   * 智慧搜尋：模糊匹配 + 相關性排序
+   */
+  async smartSearch(query: string, options: SmartSearchOptions = {}): Promise<SearchResultResponse[]> {
+    requireNonEmptyString(query, 'query');
+
+    const { limit = 10, notebook, types, includeContentPreview = true } = options;
+    const tokens = query
+      .split(/\s+/)
+      .map((token) => token.trim())
+      .filter(Boolean);
+
+    if (tokens.length === 0) {
+      return [];
+    }
+
+    const likeConditions = tokens.map((token) => {
+      const safe = this.escapeSql(token);
+      return `(content LIKE '%${safe}%' OR name LIKE '%${safe}%' OR alias LIKE '%${safe}%' OR memo LIKE '%${safe}%')`;
+    });
+
+    const conditions: string[] = [...likeConditions];
+    if (notebook) {
+      conditions.push(`box='${this.escapeSql(notebook)}'`);
+    }
+    if (types && types.length > 0) {
+      const typeConditions = types.map((t) => `'${this.escapeSql(t)}'`).join(',');
+      conditions.push(`type IN (${typeConditions})`);
+    }
+
+    const stmt = `SELECT * FROM blocks WHERE ${conditions.join(' AND ')} LIMIT ${Math.max(limit * 3, 30)}`;
+    const response = await this.client.request<Block[]>('/api/query/sql', { stmt });
+    const blocks = response.data || [];
+
+    const scored = blocks.map((block) => ({
+      block,
+      score: this.scoreBlock(block, tokens),
+    }));
+
+    scored.sort((a, b) => {
+      if (b.score !== a.score) return b.score - a.score;
+      return Number(b.block.updated || 0) - Number(a.block.updated || 0);
+    });
+
+    const resultBlocks = scored.slice(0, limit).map((item) => item.block);
+    const results = this.toSearchResultResponse(resultBlocks);
+
+    if (!includeContentPreview) {
+      return results.map((r) => ({ ...r, content: '' }));
+    }
+
+    return results;
+  }
+
+  /**
    * 转义 SQL 特殊字符
    */
   private escapeSql(str: string): string {
     return str.replace(/'/g, "''");
+  }
+
+  private scoreBlock(block: Block, tokens: string[]): number {
+    const haystack = [
+      block.name || '',
+      block.alias || '',
+      block.memo || '',
+      block.tag || '',
+      block.content || '',
+    ];
+    const content = haystack.join(' ').toLowerCase();
+
+    let score = 0;
+    for (const token of tokens) {
+      const needle = token.toLowerCase();
+      if (block.name?.toLowerCase().includes(needle)) score += 5;
+      if (block.alias?.toLowerCase().includes(needle)) score += 3;
+      if (block.tag?.toLowerCase().includes(needle)) score += 3;
+      if (block.content?.toLowerCase().includes(needle)) score += 2;
+      if (content.includes(needle)) score += 1;
+    }
+
+    return score;
   }
 }

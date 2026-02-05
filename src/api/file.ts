@@ -3,11 +3,14 @@
  */
 
 import type { SiyuanClient } from './client.js';
+import { requireNonEmptyString } from '../utils/validation.js';
 
 export class SiyuanFileApi {
   constructor(private client: SiyuanClient) {}
 
   async getFile(path: string): Promise<any> {
+    requireNonEmptyString(path, 'path');
+
     const response = await this.client.request('/api/file/getFile', { path });
     if (response.code !== 0) {
       throw new Error(`Failed to get file: ${response.msg}`);
@@ -16,6 +19,8 @@ export class SiyuanFileApi {
   }
 
   async putFile(path: string, data: string): Promise<void> {
+    requireNonEmptyString(path, 'path');
+
     const response = await this.client.request('/api/file/putFile', { path, data });
     if (response.code !== 0) {
       throw new Error(`Failed to put file: ${response.msg}`);
@@ -23,6 +28,8 @@ export class SiyuanFileApi {
   }
 
   async removeFile(path: string): Promise<void> {
+    requireNonEmptyString(path, 'path');
+
     const response = await this.client.request('/api/file/removeFile', { path });
     if (response.code !== 0) {
       throw new Error(`Failed to remove file: ${response.msg}`);
@@ -30,6 +37,9 @@ export class SiyuanFileApi {
   }
 
   async renameFile(path: string, newPath: string): Promise<void> {
+    requireNonEmptyString(path, 'path');
+    requireNonEmptyString(newPath, 'newPath');
+
     const response = await this.client.request('/api/file/renameFile', {
       path,
       newPath,
@@ -40,6 +50,8 @@ export class SiyuanFileApi {
   }
 
   async listFiles(path: string): Promise<any[]> {
+    requireNonEmptyString(path, 'path');
+
     const response = await this.client.request<any[]>('/api/file/listFiles', { path });
     if (response.code !== 0) {
       throw new Error(`Failed to list files: ${response.msg}`);

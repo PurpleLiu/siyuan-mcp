@@ -3,6 +3,7 @@
  */
 
 import type { SiyuanClient } from './client.js';
+import { requireNonEmptyString } from '../utils/validation.js';
 
 export class SiyuanSqlApi {
   constructor(private client: SiyuanClient) {}
@@ -12,6 +13,8 @@ export class SiyuanSqlApi {
    * @param stmt SQL 语句
    */
   async execute(stmt: string): Promise<any[]> {
+    requireNonEmptyString(stmt, 'stmt');
+
     const response = await this.client.request<any[]>('/api/query/sql', { stmt });
 
     if (response.code !== 0) {

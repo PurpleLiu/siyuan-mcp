@@ -198,6 +198,28 @@ export class GetNotebookConfHandler extends BaseToolHandler<{ notebook_id: strin
 }
 
 /**
+ * 获取笔记本信息
+ */
+export class GetNotebookByIdHandler extends BaseToolHandler<{ notebook_id: string }, any> {
+  readonly name = 'get_notebook_by_id';
+  readonly description = 'Get notebook details by notebook ID';
+  readonly inputSchema: JSONSchema = {
+    type: 'object',
+    properties: {
+      notebook_id: {
+        type: 'string',
+        description: 'Notebook ID',
+      },
+    },
+    required: ['notebook_id'],
+  };
+
+  async execute(args: any, context: ExecutionContext): Promise<any> {
+    return await context.siyuan.notebook.getNotebookById(args.notebook_id);
+  }
+}
+
+/**
  * 设置笔记本配置
  */
 export class SetNotebookConfHandler extends BaseToolHandler<{ notebook_id: string; conf: Record<string, any> }, { success: boolean }> {
@@ -223,4 +245,3 @@ export class SetNotebookConfHandler extends BaseToolHandler<{ notebook_id: strin
     return { success: true };
   }
 }
-
