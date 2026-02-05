@@ -2,9 +2,13 @@
 node_modules/
 
 # Build output
-dist/
+# dist/  (keep dist for distribution)
 build/
 *.tsbuildinfo
+
+# Include compiled output
+!dist/
+!dist/**
 
 # Test coverage
 coverage/
