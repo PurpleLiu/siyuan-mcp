@@ -2,6 +2,7 @@
  * 思源笔记标签相关 API
  * 用于管理文档标签
  */
+import { requireNonEmptyArray, requireNonEmptyString } from '../utils/validation.js';
 export class SiyuanTagApi {
     client;
     constructor(client) {
@@ -41,6 +42,29 @@ export class SiyuanTagApi {
      */
     async removeTag(tag) {
         return this.replaceTag(tag, '');
+    }
+    /**
+     * 批量替换/移除标签
+     */
+    async batchReplaceTags(items) {
+        requireNonEmptyArray(items, 'items');
+        const results = await Promise.all(items.map(async (item) => {
+            try {
+                requireNonEmptyString(item.oldTag, 'oldTag');
+                const success = await this.replaceTag(item.oldTag, item.newTag || '');
+                return { success, id: item.oldTag };
+            }
+            catch (error) {
+                return { success: false, id: item.oldTag, error: error instanceof Error ? error.message : String(error) };
+            }
+        }));
+        const successCount = results.filter((r) => r.success).length;
+        return {
+            total: results.length,
+            success: successCount,
+            failed: results.length - successCount,
+            results,
+        };
     }
 }
 //# sourceMappingURL=tag.js.map

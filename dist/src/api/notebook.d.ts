@@ -2,7 +2,7 @@
  * 思源笔记笔记本操作相关 API
  */
 import type { SiyuanClient } from './client.js';
-import type { NotebookConf, NotebookResponse } from '../types/index.js';
+import type { Notebook, NotebookConf, NotebookResponse } from '../types/index.js';
 export declare class SiyuanNotebookApi {
     private client;
     constructor(client: SiyuanClient);
@@ -59,5 +59,9 @@ export declare class SiyuanNotebookApi {
      * @returns 最近文档列表
      */
     getRecentDocs(): Promise<any[]>;
+    /**
+     * 通过 ID 获取笔记本信息
+     */
+    getNotebookById(notebookId: string): Promise<Notebook>;
 }
 //# sourceMappingURL=notebook.d.ts.map

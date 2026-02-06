@@ -2,6 +2,7 @@
  * 思源笔记搜索相关 API
  */
 import { extractTitle, truncateContent } from '../utils/format.js';
+import { requireNonEmptyString } from '../utils/validation.js';
 export class SiyuanSearchApi {
     client;
     constructor(client) {
@@ -14,6 +15,7 @@ export class SiyuanSearchApi {
      * @returns 搜索结果响应
      */
     async searchByFileName(fileName, options = {}) {
+        requireNonEmptyString(fileName, 'fileName');
         const { limit = 10, notebook } = options;
         let stmt = `SELECT * FROM blocks WHERE type='d' AND content LIKE '%${this.escapeSql(fileName)}%'`;
         if (notebook) {
@@ -31,6 +33,7 @@ export class SiyuanSearchApi {
      * @returns 搜索结果响应
      */
     async searchByContent(content, options = {}) {
+        requireNonEmptyString(content, 'content');
         const { limit = 10, notebook, types } = options;
         let stmt = `SELECT * FROM blocks WHERE content LIKE '%${this.escapeSql(content)}%'`;
         if (notebook) {
@@ -51,8 +54,26 @@ export class SiyuanSearchApi {
      * @returns 查询结果
      */
     async query(sql) {
+        requireNonEmptyString(sql, 'sql');
         const response = await this.client.request('/api/query/sql', { stmt: sql });
         return response.data || [];
+    }
+    /**
+     * 官方全文搜索 API（支持更多过滤条件与排序）
+     */
+    async fullTextSearch(options) {
+        requireNonEmptyString(options.query, 'query');
+        const response = await this.client.request('/api/search/fullTextSearchBlock', {
+            query: options.query,
+            method: options.method || 'keyword',
+            types: options.types,
+            paths: options.paths,
+            orderBy: options.orderBy || 'rank',
+            groupBy: options.groupBy,
+            page: options.page ?? 1,
+            pageSize: options.pageSize ?? 50,
+        });
+        return response.data;
     }
     /**
      * 将Block数组转换为搜索结果响应
@@ -120,6 +141,7 @@ export class SiyuanSearchApi {
      * @returns 搜索结果响应
      */
     async searchByTag(tag, limit = 50) {
+        requireNonEmptyString(tag, 'tag');
         // 查询包含指定标签的块(文档类型)
         const cleanTag = tag.replace(/#/g, '').trim();
         const stmt = `SELECT * FROM blocks WHERE type='d' AND tag LIKE '%#${this.escapeSql(cleanTag)}#%' LIMIT ${limit}`;
@@ -170,10 +192,79 @@ export class SiyuanSearchApi {
         return this.toSearchResultResponse(blocks);
     }
     /**
+     * 智慧搜尋：模糊匹配 + 相關性排序
+     */
+    async smartSearch(query, options = {}) {
+        requireNonEmptyString(query, 'query');
+        const { limit = 10, notebook, types, includeContentPreview = true } = options;
+        const tokens = query
+            .split(/\s+/)
+            .map((token) => token.trim())
+            .filter(Boolean);
+        if (tokens.length === 0) {
+            return [];
+        }
+        const likeConditions = tokens.map((token) => {
+            const safe = this.escapeSql(token);
+            return `(content LIKE '%${safe}%' OR name LIKE '%${safe}%' OR alias LIKE '%${safe}%' OR memo LIKE '%${safe}%')`;
+        });
+        const conditions = [...likeConditions];
+        if (notebook) {
+            conditions.push(`box='${this.escapeSql(notebook)}'`);
+        }
+        if (types && types.length > 0) {
+            const typeConditions = types.map((t) => `'${this.escapeSql(t)}'`).join(',');
+            conditions.push(`type IN (${typeConditions})`);
+        }
+        const stmt = `SELECT * FROM blocks WHERE ${conditions.join(' AND ')} LIMIT ${Math.max(limit * 3, 30)}`;
+        const response = await this.client.request('/api/query/sql', { stmt });
+        const blocks = response.data || [];
+        const scored = blocks.map((block) => ({
+            block,
+            score: this.scoreBlock(block, tokens),
+        }));
+        scored.sort((a, b) => {
+            if (b.score !== a.score)
+                return b.score - a.score;
+            return Number(b.block.updated || 0) - Number(a.block.updated || 0);
+        });
+        const resultBlocks = scored.slice(0, limit).map((item) => item.block);
+        const results = this.toSearchResultResponse(resultBlocks);
+        if (!includeContentPreview) {
+            return results.map((r) => ({ ...r, content: '' }));
+        }
+        return results;
+    }
+    /**
      * 转义 SQL 特殊字符
      */
     escapeSql(str) {
         return str.replace(/'/g, "''");
+    }
+    scoreBlock(block, tokens) {
+        const haystack = [
+            block.name || '',
+            block.alias || '',
+            block.memo || '',
+            block.tag || '',
+            block.content || '',
+        ];
+        const content = haystack.join(' ').toLowerCase();
+        let score = 0;
+        for (const token of tokens) {
+            const needle = token.toLowerCase();
+            if (block.name?.toLowerCase().includes(needle))
+                score += 5;
+            if (block.alias?.toLowerCase().includes(needle))
+                score += 3;
+            if (block.tag?.toLowerCase().includes(needle))
+                score += 3;
+            if (block.content?.toLowerCase().includes(needle))
+                score += 2;
+            if (content.includes(needle))
+                score += 1;
+        }
+        return score;
     }
 }
 //# sourceMappingURL=search.js.map

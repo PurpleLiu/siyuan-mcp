@@ -16,6 +16,21 @@ export interface SiyuanConfig {
     baseUrl: string;
     token: string;
     verbose?: boolean;
+    timeoutMs?: number;
+    retry?: SiyuanRetryOptions;
+}
+/**
+ * 请求重试配置
+ */
+export interface SiyuanRetryOptions {
+    /** 最大重试次数（默认 2） */
+    retries?: number;
+    /** 最小退避毫秒数（默认 200） */
+    minDelayMs?: number;
+    /** 最大退避毫秒数（默认 2000） */
+    maxDelayMs?: number;
+    /** 需要重试的场景 */
+    retryOn?: Array<'network' | 'timeout' | '5xx' | '429'>;
 }
 /**
  * 块信息
@@ -128,5 +143,60 @@ export interface BlockOperationOptions {
 export interface TagResponse {
     label: string;
     document_count: number;
+}
+/**
+ * 文件树条目（listDocsByPath）
+ */
+export interface FileTreeDoc {
+    id: string;
+    name: string;
+    path: string;
+    icon?: string;
+    type?: string;
+    subFileCount?: number;
+}
+export interface ListDocsByPathResponse {
+    files: FileTreeDoc[];
+}
+/**
+ * 块面包屑
+ */
+export interface BlockBreadcrumbItem {
+    id: string;
+    name?: string;
+    type?: string;
+}
+export interface BlockBreadcrumbResponse {
+    breadcrumb: BlockBreadcrumbItem[];
+}
+/**
+ * 块基础信息
+ */
+export interface BlockInfoResponse {
+    id: string;
+    box: string;
+    path: string;
+    hpath: string;
+    root_id?: string;
+    parent_id?: string;
+    type?: string;
+    subtype?: string;
+}
+/**
+ * 全文搜索选项
+ */
+export interface FullTextSearchOptions {
+    query: string;
+    method?: string;
+    types?: string[];
+    paths?: string[];
+    orderBy?: string;
+    groupBy?: string;
+    page?: number;
+    pageSize?: number;
+}
+export interface FullTextSearchResponse {
+    blocks: Block[];
+    matchedBlocks?: Block[];
 }
 //# sourceMappingURL=index.d.ts.map

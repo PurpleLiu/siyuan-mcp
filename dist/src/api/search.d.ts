@@ -2,7 +2,11 @@
  * 思源笔记搜索相关 API
  */
 import type { SiyuanClient } from './client.js';
-import type { Block, SearchOptions, SearchResultResponse, TagResponse } from '../types/index.js';
+import type { Block, FullTextSearchOptions, FullTextSearchResponse, SearchOptions, SearchResultResponse, TagResponse } from '../types/index.js';
+export interface SmartSearchOptions extends SearchOptions {
+    limit?: number;
+    includeContentPreview?: boolean;
+}
 export declare class SiyuanSearchApi {
     private client;
     constructor(client: SiyuanClient);
@@ -26,6 +30,10 @@ export declare class SiyuanSearchApi {
      * @returns 查询结果
      */
     query(sql: string): Promise<Block[]>;
+    /**
+     * 官方全文搜索 API（支持更多过滤条件与排序）
+     */
+    fullTextSearch(options: FullTextSearchOptions): Promise<FullTextSearchResponse>;
     /**
      * 将Block数组转换为搜索结果响应
      */
@@ -58,8 +66,13 @@ export declare class SiyuanSearchApi {
         types?: string[];
     }): Promise<SearchResultResponse[]>;
     /**
+     * 智慧搜尋：模糊匹配 + 相關性排序
+     */
+    smartSearch(query: string, options?: SmartSearchOptions): Promise<SearchResultResponse[]>;
+    /**
      * 转义 SQL 特殊字符
      */
     private escapeSql;
+    private scoreBlock;
 }
 //# sourceMappingURL=search.d.ts.map

@@ -2,6 +2,77 @@
  * 文档相关工具处理器
  */
 import { BaseToolHandler } from './base.js';
+import { readFileSync } from 'fs';
+/**
+ * Helper: resolve content from either `content` or `content_file` param
+ * If content_file is provided, read from that file path.
+ * This avoids shell escaping issues when passing multi-line markdown.
+ */
+function resolveContent(args) {
+    if (args.content_file) {
+        try {
+            return readFileSync(args.content_file, 'utf-8');
+        }
+        catch (error) {
+            throw new Error(`Failed to read content_file "${args.content_file}": ${error.message}`);
+        }
+    }
+    if (args.content) {
+        return args.content;
+    }
+    throw new Error('Either "content" or "content_file" must be provided');
+}
+const DEFAULT_DAILY_NOTE_PATH = '/daily note/{{now | date "2006/01"}}/{{now | date "2006-01-02"}}';
+function formatGoDate(date, layout) {
+    const year = date.getFullYear();
+    const month = date.getMonth() + 1;
+    const day = date.getDate();
+    const hours = date.getHours();
+    const minutes = date.getMinutes();
+    const seconds = date.getSeconds();
+    const pad2 = (value) => String(value).padStart(2, '0');
+    let output = layout;
+    output = output.replace(/2006/g, String(year));
+    output = output.replace(/06/g, String(year).slice(-2));
+    output = output.replace(/01/g, pad2(month));
+    output = output.replace(/02/g, pad2(day));
+    output = output.replace(/15/g, pad2(hours));
+    output = output.replace(/04/g, pad2(minutes));
+    output = output.replace(/05/g, pad2(seconds));
+    return output;
+}
+function formatLocalDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+async function resolveDailyNotePath(template, date, context) {
+    const pattern = /\{\{\s*now\s*\|\s*date\s*"([^"]+)"\s*\}\}/g;
+    let replaced = false;
+    const rendered = template.replace(pattern, (_match, layout) => {
+        replaced = true;
+        return formatGoDate(date, layout);
+    });
+    if (replaced) {
+        return { path: rendered, reliable: true };
+    }
+    if (!template.includes('{{')) {
+        return { path: template, reliable: false };
+    }
+    try {
+        const fallback = await context.siyuan.template.renderSprig(template, {
+            now: date.toISOString(),
+        });
+        if (fallback) {
+            return { path: fallback, reliable: false };
+        }
+    }
+    catch (error) {
+        context.logger.debug('Failed to render daily note path template', error);
+    }
+    return null;
+}
 /**
  * 获取文档内容
  */
@@ -73,13 +144,52 @@ export class CreateDocumentHandler extends BaseToolHandler {
             },
             content: {
                 type: 'string',
-                description: 'Markdown content for the new note',
+                description: 'Markdown content for the new note (use this OR content_file)',
+            },
+            content_file: {
+                type: 'string',
+                description: 'Path to a local file containing markdown content (avoids shell escaping issues)',
             },
         },
-        required: ['notebook_id', 'path', 'content'],
+        required: ['notebook_id', 'path'],
     };
     async execute(args, context) {
-        return await context.siyuan.createFile(args.notebook_id, args.path, args.content);
+        const content = resolveContent(args);
+        return await context.siyuan.createFile(args.notebook_id, args.path, content);
+    }
+}
+/**
+ * 批量创建文档
+ */
+export class BatchCreateDocumentsHandler extends BaseToolHandler {
+    name = 'batch_create_documents';
+    description = 'Create multiple documents in bulk. Returns per-item success and errors';
+    inputSchema = {
+        type: 'object',
+        properties: {
+            items: {
+                type: 'array',
+                description: 'Array of documents to create',
+                items: {
+                    type: 'object',
+                    properties: {
+                        notebook_id: { type: 'string', description: 'Notebook ID' },
+                        path: { type: 'string', description: 'Document path' },
+                        content: { type: 'string', description: 'Markdown content' },
+                    },
+                    required: ['notebook_id', 'path', 'content'],
+                },
+            },
+        },
+        required: ['items'],
+    };
+    async execute(args, context) {
+        const items = (args.items || []).map((item) => ({
+            notebookId: item.notebook_id,
+            path: item.path,
+            markdown: item.content,
+        }));
+        return await context.siyuan.document.createDocuments(items);
     }
 }
 /**
@@ -97,13 +207,18 @@ export class AppendToDocumentHandler extends BaseToolHandler {
             },
             content: {
                 type: 'string',
-                description: 'Markdown content to append to the note',
+                description: 'Markdown content to append to the note (use this OR content_file)',
+            },
+            content_file: {
+                type: 'string',
+                description: 'Path to a local file containing markdown content (avoids shell escaping issues)',
             },
         },
-        required: ['document_id', 'content'],
+        required: ['document_id'],
     };
     async execute(args, context) {
-        return await context.siyuan.appendToFile(args.document_id, args.content);
+        const content = resolveContent(args);
+        return await context.siyuan.appendToFile(args.document_id, content);
     }
 }
 /**
@@ -121,13 +236,18 @@ export class UpdateDocumentHandler extends BaseToolHandler {
             },
             content: {
                 type: 'string',
-                description: 'New markdown content that will replace the existing note content',
+                description: 'New markdown content that will replace the existing note content (use this OR content_file)',
+            },
+            content_file: {
+                type: 'string',
+                description: 'Path to a local file containing markdown content (avoids shell escaping issues)',
             },
         },
-        required: ['document_id', 'content'],
+        required: ['document_id'],
     };
     async execute(args, context) {
-        await context.siyuan.overwriteFile(args.document_id, args.content);
+        const content = resolveContent(args);
+        await context.siyuan.overwriteFile(args.document_id, content);
         return { success: true, document_id: args.document_id };
     }
 }
@@ -153,6 +273,80 @@ export class AppendToDailyNoteHandler extends BaseToolHandler {
     };
     async execute(args, context) {
         return await context.siyuan.appendToDailyNote(args.notebook_id, args.content);
+    }
+}
+/**
+ * 列出近 N 天今日笔记未完成待办
+ */
+export class ListDailyNoteTodosHandler extends BaseToolHandler {
+    name = 'list_daily_note_todos';
+    description = 'List incomplete markdown checkbox todos from daily notes within the specified notebook over the past N days. Returns 0-based line numbers.';
+    inputSchema = {
+        type: 'object',
+        properties: {
+            notebook_id: {
+                type: 'string',
+                description: 'The notebook ID where daily notes reside',
+            },
+            days: {
+                type: 'number',
+                description: 'How many recent days to scan (default 7)',
+                default: 7,
+            },
+        },
+        required: ['notebook_id'],
+    };
+    async execute(args, context) {
+        const daysRaw = args.days ?? 7;
+        const days = Number.isFinite(daysRaw) ? Math.max(1, Math.floor(daysRaw)) : 7;
+        const notebookConf = await context.siyuan.notebook.getNotebookConf(args.notebook_id);
+        const dailyNoteSavePath = notebookConf.dailyNoteSavePath || DEFAULT_DAILY_NOTE_PATH;
+        const checkboxPattern = /^\s*-\s*\[( |x|X)\]\s+(.*)$/;
+        const todos = [];
+        const processedDocIds = new Set();
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        for (let offset = 0; offset < days; offset += 1) {
+            const targetDate = new Date(today);
+            targetDate.setDate(today.getDate() - offset);
+            const resolved = await resolveDailyNotePath(dailyNoteSavePath, targetDate, context);
+            if (!resolved?.path) {
+                continue;
+            }
+            const docIds = await context.siyuan.document.getDocIdsByPath(args.notebook_id, resolved.path);
+            if (!docIds || docIds.length === 0) {
+                continue;
+            }
+            for (const docId of docIds) {
+                if (processedDocIds.has(docId)) {
+                    continue;
+                }
+                processedDocIds.add(docId);
+                const dateLabel = resolved.reliable ? formatLocalDate(targetDate) : docId;
+                const content = await context.siyuan.getFileContent(docId);
+                const lines = content.split('\n');
+                for (let lineIndex = 0; lineIndex < lines.length; lineIndex += 1) {
+                    const line = lines[lineIndex];
+                    const match = line.match(checkboxPattern);
+                    if (!match) {
+                        continue;
+                    }
+                    const isDone = match[1].toLowerCase() === 'x';
+                    if (isDone) {
+                        continue;
+                    }
+                    const text = match[2].trim();
+                    todos.push({
+                        text,
+                        done: false,
+                        date: dateLabel,
+                        document_id: docId,
+                        line_no: lineIndex,
+                    });
+                }
+            }
+        }
+        return todos;
     }
 }
 /**
@@ -230,6 +424,36 @@ export class MoveDocumentsHandler extends BaseToolHandler {
     }
 }
 /**
+ * 通过路径批量移动文档
+ */
+export class MoveDocumentsByPathHandler extends BaseToolHandler {
+    name = 'move_documents_by_path';
+    description = 'Move documents by storage paths to a target notebook path';
+    inputSchema = {
+        type: 'object',
+        properties: {
+            from_paths: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'Source document paths (e.g., /folder/note)',
+            },
+            to_notebook_id: {
+                type: 'string',
+                description: 'Target notebook ID',
+            },
+            to_path: {
+                type: 'string',
+                description: 'Target path (e.g., / or /target/folder)',
+            },
+        },
+        required: ['from_paths', 'to_notebook_id', 'to_path'],
+    };
+    async execute(args, context) {
+        await context.siyuan.document.moveDocumentsByPath(args.from_paths, args.to_notebook_id, args.to_path);
+        return { success: true, moved_count: args.from_paths.length };
+    }
+}
+/**
  * 获取文档树
  */
 export class GetDocumentTreeHandler extends BaseToolHandler {
@@ -281,6 +505,27 @@ export class RemoveDocumentHandler extends BaseToolHandler {
     }
 }
 /**
+ * 通过 ID 删除文档
+ */
+export class RemoveDocumentByIdHandler extends BaseToolHandler {
+    name = 'remove_document_by_id';
+    description = 'Remove a document by document ID (dangerous operation)';
+    inputSchema = {
+        type: 'object',
+        properties: {
+            document_id: {
+                type: 'string',
+                description: 'Document ID (block ID)',
+            },
+        },
+        required: ['document_id'],
+    };
+    async execute(args, context) {
+        await context.siyuan.document.removeDocumentById(args.document_id);
+        return { success: true };
+    }
+}
+/**
  * 重命名文档
  */
 export class RenameDocumentHandler extends BaseToolHandler {
@@ -306,6 +551,31 @@ export class RenameDocumentHandler extends BaseToolHandler {
     };
     async execute(args, context) {
         await context.siyuan.document.renameDocument(args.notebook_id, args.path, args.new_name);
+        return { success: true, new_name: args.new_name };
+    }
+}
+/**
+ * 通过 ID 重命名文档
+ */
+export class RenameDocumentByIdHandler extends BaseToolHandler {
+    name = 'rename_document_by_id';
+    description = 'Rename a document by document ID';
+    inputSchema = {
+        type: 'object',
+        properties: {
+            document_id: {
+                type: 'string',
+                description: 'Document ID (block ID)',
+            },
+            new_name: {
+                type: 'string',
+                description: 'New document title',
+            },
+        },
+        required: ['document_id', 'new_name'],
+    };
+    async execute(args, context) {
+        await context.siyuan.document.renameDocumentById(args.document_id, args.new_name);
         return { success: true, new_name: args.new_name };
     }
 }

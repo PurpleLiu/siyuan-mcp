@@ -3,6 +3,7 @@
  * 用于管理文档标签
  */
 import type { SiyuanClient } from './client.js';
+import type { BatchOperationResult } from '../types/enhanced.js';
 export declare class SiyuanTagApi {
     private client;
     constructor(client: SiyuanClient);
@@ -19,5 +20,12 @@ export declare class SiyuanTagApi {
      * @returns 操作成功返回true,失败则抛出异常
      */
     removeTag(tag: string): Promise<boolean>;
+    /**
+     * 批量替换/移除标签
+     */
+    batchReplaceTags(items: Array<{
+        oldTag: string;
+        newTag: string;
+    }>): Promise<BatchOperationResult>;
 }
 //# sourceMappingURL=tag.d.ts.map

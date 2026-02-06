@@ -71,4 +71,61 @@ export class RollbackSnapshotHandler extends BaseToolHandler {
         };
     }
 }
+/**
+ * 自动快照
+ */
+export class AutoSnapshotHandler extends BaseToolHandler {
+    name = 'auto_snapshot';
+    description = 'Create an auto snapshot with a generated timestamp tag';
+    inputSchema = {
+        type: 'object',
+        properties: {
+            memo_prefix: {
+                type: 'string',
+                description: 'Optional memo prefix (default: "Auto snapshot")',
+            },
+            tag_prefix: {
+                type: 'string',
+                description: 'Optional tag prefix (default: "auto")',
+            },
+        },
+    };
+    async execute(args, context) {
+        return await context.siyuan.snapshot.autoSnapshot({
+            memoPrefix: args.memo_prefix,
+            tagPrefix: args.tag_prefix,
+        });
+    }
+}
+/**
+ * 清理旧的带标签快照
+ */
+export class CleanupSnapshotsHandler extends BaseToolHandler {
+    name = 'cleanup_snapshots';
+    description = 'Cleanup old tagged snapshots by prefix, age, and retention count';
+    inputSchema = {
+        type: 'object',
+        properties: {
+            tag_prefix: {
+                type: 'string',
+                description: 'Tag prefix to filter (default: "auto")',
+            },
+            keep_latest: {
+                type: 'number',
+                description: 'How many latest snapshots to keep (default: 5)',
+            },
+            max_age_days: {
+                type: 'number',
+                description: 'Max age in days to keep (default: 30)',
+            },
+        },
+    };
+    async execute(args, context) {
+        return await context.siyuan.snapshot.cleanupTaggedSnapshots({
+            tagPrefix: args.tag_prefix,
+            keepLatest: args.keep_latest,
+            maxAgeDays: args.max_age_days,
+        });
+    }
+}
 //# sourceMappingURL=snapshot.js.map

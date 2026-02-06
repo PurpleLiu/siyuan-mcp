@@ -1,6 +1,7 @@
 /**
  * 思源笔记属性相关 API
  */
+import { requireNonEmptyString } from '../utils/validation.js';
 export class SiyuanAttributeApi {
     client;
     constructor(client) {
@@ -12,6 +13,7 @@ export class SiyuanAttributeApi {
      * @param attrs 属性对象
      */
     async setBlockAttrs(blockId, attrs) {
+        requireNonEmptyString(blockId, 'blockId');
         const response = await this.client.request('/api/attr/setBlockAttrs', {
             id: blockId,
             attrs,
@@ -25,6 +27,7 @@ export class SiyuanAttributeApi {
      * @param blockId 块 ID
      */
     async getBlockAttrs(blockId) {
+        requireNonEmptyString(blockId, 'blockId');
         const response = await this.client.request('/api/attr/getBlockAttrs', { id: blockId });
         if (response.code !== 0) {
             throw new Error(`Failed to get block attrs: ${response.msg}`);

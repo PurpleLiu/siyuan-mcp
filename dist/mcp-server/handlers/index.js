@@ -30,10 +30,10 @@ export * from './system.js';
 export * from './snapshot.js';
 // 标签相关
 export * from './tag.js';
-import { UnifiedSearchHandler, } from './search.js';
-import { GetDocumentContentHandler, CreateDocumentHandler, AppendToDocumentHandler, UpdateDocumentHandler, AppendToDailyNoteHandler, MoveDocumentsHandler, GetDocumentTreeHandler, RemoveDocumentHandler, RenameDocumentHandler, GetHumanPathByIdHandler, GetHumanPathByPathHandler, GetPathByIdHandler, GetIdsByHPathHandler, } from './document.js';
-import { ListNotebooksHandler, GetRecentlyUpdatedDocumentsHandler, CreateNotebookHandler, OpenNotebookHandler, CloseNotebookHandler, RenameNotebookHandler, RemoveNotebookHandler, GetNotebookConfHandler, SetNotebookConfHandler, } from './notebook.js';
-import { DeleteBlockHandler, MoveBlockHandler, FoldBlockHandler, UnfoldBlockHandler, GetChildBlocksHandler, TransferBlockRefHandler, } from './block.js';
+import { UnifiedSearchHandler, SmartSearchHandler, FullTextSearchBlocksHandler, } from './search.js';
+import { GetDocumentContentHandler, CreateDocumentHandler, BatchCreateDocumentsHandler, AppendToDocumentHandler, UpdateDocumentHandler, AppendToDailyNoteHandler, ListDailyNoteTodosHandler, MoveDocumentsHandler, MoveDocumentsByPathHandler, GetDocumentTreeHandler, RemoveDocumentHandler, RemoveDocumentByIdHandler, RenameDocumentHandler, RenameDocumentByIdHandler, GetHumanPathByIdHandler, GetHumanPathByPathHandler, GetPathByIdHandler, GetIdsByHPathHandler, } from './document.js';
+import { ListNotebooksHandler, GetRecentlyUpdatedDocumentsHandler, CreateNotebookHandler, OpenNotebookHandler, CloseNotebookHandler, RenameNotebookHandler, RemoveNotebookHandler, GetNotebookConfHandler, SetNotebookConfHandler, GetNotebookByIdHandler, } from './notebook.js';
+import { DeleteBlockHandler, MoveBlockHandler, FoldBlockHandler, UnfoldBlockHandler, GetChildBlocksHandler, TransferBlockRefHandler, PrependBlockHandler, GetBlockBreadcrumbHandler, GetBlockInfoHandler, } from './block.js';
 import { GetBlockAttrsHandler, SetBlockAttrsHandler, } from './attributes.js';
 import { ExecuteSqlHandler, FlushTransactionHandler, } from './sql.js';
 import { RenderTemplateHandler, RenderSprigHandler, } from './templates.js';
@@ -42,23 +42,30 @@ import { GetFileHandler, PutFileHandler, RemoveFileHandler, RenameFileHandler, L
 import { ExportMarkdownHandler, ExportFilesHandler, } from './export.js';
 import { PushMessageHandler, PushErrorHandler, } from './notification.js';
 import { GetBootProgressHandler, GetSystemVersionHandler, GetSystemTimeHandler, } from './system.js';
-import { CreateSnapshotHandler, ListSnapshotsHandler, RollbackSnapshotHandler, } from './snapshot.js';
-import { ListAllTagsHandler, ReplaceTagHandler, } from './tag.js';
+import { CreateSnapshotHandler, ListSnapshotsHandler, RollbackSnapshotHandler, AutoSnapshotHandler, CleanupSnapshotsHandler, } from './snapshot.js';
+import { ListAllTagsHandler, ReplaceTagHandler, BatchReplaceTagsHandler, } from './tag.js';
 // 工厂函数：创建所有处理器实例
 export function createAllHandlers() {
     return [
         // 搜索
         new UnifiedSearchHandler(), // 统一搜索
+        new SmartSearchHandler(),
+        new FullTextSearchBlocksHandler(),
         // 文档
         new GetDocumentContentHandler(),
         new CreateDocumentHandler(),
+        new BatchCreateDocumentsHandler(),
         new AppendToDocumentHandler(),
         new UpdateDocumentHandler(),
         new AppendToDailyNoteHandler(),
+        new ListDailyNoteTodosHandler(),
         new MoveDocumentsHandler(),
+        new MoveDocumentsByPathHandler(),
         new GetDocumentTreeHandler(),
         new RemoveDocumentHandler(),
+        new RemoveDocumentByIdHandler(),
         new RenameDocumentHandler(),
+        new RenameDocumentByIdHandler(),
         new GetHumanPathByIdHandler(),
         new GetHumanPathByPathHandler(),
         new GetPathByIdHandler(),
@@ -73,6 +80,7 @@ export function createAllHandlers() {
         new RemoveNotebookHandler(),
         new GetNotebookConfHandler(),
         new SetNotebookConfHandler(),
+        new GetNotebookByIdHandler(),
         // 块
         new DeleteBlockHandler(),
         new MoveBlockHandler(),
@@ -80,6 +88,9 @@ export function createAllHandlers() {
         new UnfoldBlockHandler(),
         new GetChildBlocksHandler(),
         new TransferBlockRefHandler(),
+        new PrependBlockHandler(),
+        new GetBlockBreadcrumbHandler(),
+        new GetBlockInfoHandler(),
         // 属性
         new GetBlockAttrsHandler(),
         new SetBlockAttrsHandler(),
@@ -111,9 +122,12 @@ export function createAllHandlers() {
         new CreateSnapshotHandler(),
         new ListSnapshotsHandler(),
         new RollbackSnapshotHandler(),
+        new AutoSnapshotHandler(),
+        new CleanupSnapshotsHandler(),
         // 标签
         new ListAllTagsHandler(),
         new ReplaceTagHandler(),
+        new BatchReplaceTagsHandler(),
     ];
 }
 //# sourceMappingURL=index.js.map

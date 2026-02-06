@@ -1,6 +1,7 @@
 /**
  * 思源笔记模板 API
  */
+import { requireNonEmptyString } from '../utils/validation.js';
 export class SiyuanTemplateApi {
     client;
     constructor(client) {
@@ -12,6 +13,7 @@ export class SiyuanTemplateApi {
      * @param data 模板参数
      */
     async renderTemplate(templateId, data) {
+        requireNonEmptyString(templateId, 'templateId');
         const response = await this.client.request('/api/template/render', {
             id: templateId,
             data,
@@ -27,6 +29,7 @@ export class SiyuanTemplateApi {
      * @param data 模板参数
      */
     async renderSprig(template, data) {
+        requireNonEmptyString(template, 'template');
         const response = await this.client.request('/api/template/renderSprig', {
             template,
             data,

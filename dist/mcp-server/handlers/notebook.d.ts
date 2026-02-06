@@ -113,6 +113,17 @@ export declare class GetNotebookConfHandler extends BaseToolHandler<{
     execute(args: any, context: ExecutionContext): Promise<any>;
 }
 /**
+ * 获取笔记本信息
+ */
+export declare class GetNotebookByIdHandler extends BaseToolHandler<{
+    notebook_id: string;
+}, any> {
+    readonly name = "get_notebook_by_id";
+    readonly description = "Get notebook details by notebook ID";
+    readonly inputSchema: JSONSchema;
+    execute(args: any, context: ExecutionContext): Promise<any>;
+}
+/**
  * 设置笔记本配置
  */
 export declare class SetNotebookConfHandler extends BaseToolHandler<{

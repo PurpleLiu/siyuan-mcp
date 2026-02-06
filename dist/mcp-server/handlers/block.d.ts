@@ -78,4 +78,33 @@ export declare class TransferBlockRefHandler extends BaseToolHandler<{
         success: boolean;
     }>;
 }
+export declare class PrependBlockHandler extends BaseToolHandler<{
+    parent_id: string;
+    content: string;
+}, {
+    block_id: string;
+}> {
+    readonly name = "prepend_block";
+    readonly description = "Prepend a new block as the first child under a parent block";
+    readonly inputSchema: JSONSchema;
+    execute(args: any, context: ExecutionContext): Promise<{
+        block_id: string;
+    }>;
+}
+export declare class GetBlockBreadcrumbHandler extends BaseToolHandler<{
+    block_id: string;
+}, any> {
+    readonly name = "get_block_breadcrumb";
+    readonly description = "Get breadcrumb path for a block";
+    readonly inputSchema: JSONSchema;
+    execute(args: any, context: ExecutionContext): Promise<any>;
+}
+export declare class GetBlockInfoHandler extends BaseToolHandler<{
+    block_id: string;
+}, any> {
+    readonly name = "get_block_info";
+    readonly description = "Get basic metadata for a block";
+    readonly inputSchema: JSONSchema;
+    execute(args: any, context: ExecutionContext): Promise<any>;
+}
 //# sourceMappingURL=block.d.ts.map

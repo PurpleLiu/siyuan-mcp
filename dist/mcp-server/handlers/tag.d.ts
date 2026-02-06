@@ -33,4 +33,18 @@ export declare class ReplaceTagHandler extends BaseToolHandler<{
     readonly inputSchema: JSONSchema;
     execute(args: any, context: ExecutionContext): Promise<boolean>;
 }
+/**
+ * 批量替换标签
+ */
+export declare class BatchReplaceTagsHandler extends BaseToolHandler<{
+    items: Array<{
+        old_tag: string;
+        new_tag: string;
+    }>;
+}, any> {
+    readonly name = "batch_replace_tags";
+    readonly description = "Batch replace or remove multiple tags across all notes. Each item includes old_tag and new_tag (empty new_tag removes)";
+    readonly inputSchema: JSONSchema;
+    execute(args: any, context: ExecutionContext): Promise<any>;
+}
 //# sourceMappingURL=tag.d.ts.map

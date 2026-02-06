@@ -2,6 +2,7 @@
  * 思源笔记块操作相关 API
  */
 import type { SiyuanClient } from './client.js';
+import type { BlockBreadcrumbResponse, BlockInfoResponse } from '../types/index.js';
 export declare class SiyuanBlockApi {
     private client;
     constructor(client: SiyuanClient);
@@ -78,5 +79,17 @@ export declare class SiyuanBlockApi {
      * @param toId 目标块 ID
      */
     transferBlockRef(fromId: string, toId: string): Promise<void>;
+    /**
+     * 在父块下插入块（前置）
+     */
+    prependBlock(parentId: string, content: string): Promise<string>;
+    /**
+     * 获取块面包屑
+     */
+    getBlockBreadcrumb(blockId: string): Promise<BlockBreadcrumbResponse>;
+    /**
+     * 获取块基础信息
+     */
+    getBlockInfo(blockId: string): Promise<BlockInfoResponse>;
 }
 //# sourceMappingURL=block.d.ts.map

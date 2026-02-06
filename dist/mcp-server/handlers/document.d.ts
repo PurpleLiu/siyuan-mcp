@@ -4,6 +4,13 @@
 import { BaseToolHandler } from './base.js';
 import type { ExecutionContext, JSONSchema } from '../core/types.js';
 import type { DocTreeNodeResponse } from '../../src/types/index.js';
+type DailyNoteTodoItem = {
+    text: string;
+    done: boolean;
+    date: string;
+    document_id: string;
+    line_no: number;
+};
 /**
  * 获取文档内容
  */
@@ -23,7 +30,8 @@ export declare class GetDocumentContentHandler extends BaseToolHandler<{
 export declare class CreateDocumentHandler extends BaseToolHandler<{
     notebook_id: string;
     path: string;
-    content: string;
+    content?: string;
+    content_file?: string;
 }, string> {
     readonly name = "create_document";
     readonly description = "Create a new note document in a SiYuan notebook with markdown content";
@@ -31,11 +39,27 @@ export declare class CreateDocumentHandler extends BaseToolHandler<{
     execute(args: any, context: ExecutionContext): Promise<string>;
 }
 /**
+ * 批量创建文档
+ */
+export declare class BatchCreateDocumentsHandler extends BaseToolHandler<{
+    items: Array<{
+        notebook_id: string;
+        path: string;
+        content: string;
+    }>;
+}, any> {
+    readonly name = "batch_create_documents";
+    readonly description = "Create multiple documents in bulk. Returns per-item success and errors";
+    readonly inputSchema: JSONSchema;
+    execute(args: any, context: ExecutionContext): Promise<any>;
+}
+/**
  * 追加到文档
  */
 export declare class AppendToDocumentHandler extends BaseToolHandler<{
     document_id: string;
-    content: string;
+    content?: string;
+    content_file?: string;
 }, string> {
     readonly name = "append_to_document";
     readonly description = "Append markdown content to the end of an existing note in SiYuan";
@@ -47,7 +71,8 @@ export declare class AppendToDocumentHandler extends BaseToolHandler<{
  */
 export declare class UpdateDocumentHandler extends BaseToolHandler<{
     document_id: string;
-    content: string;
+    content?: string;
+    content_file?: string;
 }, {
     success: boolean;
     document_id: string;
@@ -73,6 +98,18 @@ export declare class AppendToDailyNoteHandler extends BaseToolHandler<{
     execute(args: any, context: ExecutionContext): Promise<string>;
 }
 /**
+ * 列出近 N 天今日笔记未完成待办
+ */
+export declare class ListDailyNoteTodosHandler extends BaseToolHandler<{
+    notebook_id: string;
+    days?: number;
+}, DailyNoteTodoItem[]> {
+    readonly name = "list_daily_note_todos";
+    readonly description = "List incomplete markdown checkbox todos from daily notes within the specified notebook over the past N days. Returns 0-based line numbers.";
+    readonly inputSchema: JSONSchema;
+    execute(args: any, context: ExecutionContext): Promise<DailyNoteTodoItem[]>;
+}
+/**
  * 移动文档（通过ID）
  */
 export declare class MoveDocumentsHandler extends BaseToolHandler<{
@@ -95,6 +132,25 @@ export declare class MoveDocumentsHandler extends BaseToolHandler<{
         from_ids: string[];
         to_parent_id?: string;
         to_notebook_root?: string;
+    }>;
+}
+/**
+ * 通过路径批量移动文档
+ */
+export declare class MoveDocumentsByPathHandler extends BaseToolHandler<{
+    from_paths: string[];
+    to_notebook_id: string;
+    to_path: string;
+}, {
+    success: boolean;
+    moved_count: number;
+}> {
+    readonly name = "move_documents_by_path";
+    readonly description = "Move documents by storage paths to a target notebook path";
+    readonly inputSchema: JSONSchema;
+    execute(args: any, context: ExecutionContext): Promise<{
+        success: boolean;
+        moved_count: number;
     }>;
 }
 /**
@@ -126,6 +182,21 @@ export declare class RemoveDocumentHandler extends BaseToolHandler<{
     }>;
 }
 /**
+ * 通过 ID 删除文档
+ */
+export declare class RemoveDocumentByIdHandler extends BaseToolHandler<{
+    document_id: string;
+}, {
+    success: boolean;
+}> {
+    readonly name = "remove_document_by_id";
+    readonly description = "Remove a document by document ID (dangerous operation)";
+    readonly inputSchema: JSONSchema;
+    execute(args: any, context: ExecutionContext): Promise<{
+        success: boolean;
+    }>;
+}
+/**
  * 重命名文档
  */
 export declare class RenameDocumentHandler extends BaseToolHandler<{
@@ -138,6 +209,24 @@ export declare class RenameDocumentHandler extends BaseToolHandler<{
 }> {
     readonly name = "rename_document";
     readonly description = "Rename a document by notebook ID and path";
+    readonly inputSchema: JSONSchema;
+    execute(args: any, context: ExecutionContext): Promise<{
+        success: boolean;
+        new_name: string;
+    }>;
+}
+/**
+ * 通过 ID 重命名文档
+ */
+export declare class RenameDocumentByIdHandler extends BaseToolHandler<{
+    document_id: string;
+    new_name: string;
+}, {
+    success: boolean;
+    new_name: string;
+}> {
+    readonly name = "rename_document_by_id";
+    readonly description = "Rename a document by document ID";
     readonly inputSchema: JSONSchema;
     execute(args: any, context: ExecutionContext): Promise<{
         success: boolean;
@@ -206,4 +295,5 @@ export declare class GetIdsByHPathHandler extends BaseToolHandler<{
         ids: string[];
     }>;
 }
+export {};
 //# sourceMappingURL=document.d.ts.map

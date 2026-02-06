@@ -1,6 +1,7 @@
 /**
  * 思源笔记块操作相关 API
  */
+import { requireNonEmptyString } from '../utils/validation.js';
 export class SiyuanBlockApi {
     client;
     constructor(client) {
@@ -12,6 +13,7 @@ export class SiyuanBlockApi {
      * @returns 块内容
      */
     async getBlockKramdown(blockId) {
+        requireNonEmptyString(blockId, 'blockId');
         const response = await this.client.request('/api/block/getBlockKramdown', { id: blockId });
         return response.data.kramdown;
     }
@@ -21,6 +23,7 @@ export class SiyuanBlockApi {
      * @returns Markdown 内容（纯净内容，不含元信息）
      */
     async getBlockMarkdown(blockId) {
+        requireNonEmptyString(blockId, 'blockId');
         const response = await this.client.request('/api/export/exportMdContent', { id: blockId });
         return response.data.content;
     }
@@ -31,6 +34,8 @@ export class SiyuanBlockApi {
      * @returns 操作结果
      */
     async updateBlock(blockId, content) {
+        requireNonEmptyString(blockId, 'blockId');
+        requireNonEmptyString(content, 'content');
         const response = await this.client.request('/api/block/updateBlock', {
             id: blockId,
             dataType: 'markdown',
@@ -47,6 +52,8 @@ export class SiyuanBlockApi {
      * @returns 新创建的块 ID
      */
     async appendBlock(parentId, content) {
+        requireNonEmptyString(parentId, 'parentId');
+        requireNonEmptyString(content, 'content');
         const response = await this.client.request('/api/block/appendBlock', {
             parentID: parentId,
             dataType: 'markdown',
@@ -64,6 +71,8 @@ export class SiyuanBlockApi {
      * @returns 新创建的块 ID
      */
     async insertBlockBefore(previousId, content) {
+        requireNonEmptyString(previousId, 'previousId');
+        requireNonEmptyString(content, 'content');
         const response = await this.client.request('/api/block/insertBlock', {
             previousID: previousId,
             dataType: 'markdown',
@@ -81,6 +90,8 @@ export class SiyuanBlockApi {
      * @returns 新创建的块 ID
      */
     async insertBlockAfter(nextId, content) {
+        requireNonEmptyString(nextId, 'nextId');
+        requireNonEmptyString(content, 'content');
         const response = await this.client.request('/api/block/insertBlock', {
             nextID: nextId,
             dataType: 'markdown',
@@ -96,6 +107,7 @@ export class SiyuanBlockApi {
      * @param blockId 块 ID
      */
     async deleteBlock(blockId) {
+        requireNonEmptyString(blockId, 'blockId');
         const response = await this.client.request('/api/block/deleteBlock', { id: blockId });
         if (response.code !== 0) {
             throw new Error(`Failed to delete block: ${response.msg}`);
@@ -108,6 +120,7 @@ export class SiyuanBlockApi {
      * @param parentId 目标父块 ID（可选）
      */
     async moveBlock(blockId, previousId, parentId) {
+        requireNonEmptyString(blockId, 'blockId');
         const response = await this.client.request('/api/block/moveBlock', {
             id: blockId,
             previousID: previousId,
@@ -122,6 +135,7 @@ export class SiyuanBlockApi {
      * @param blockId 块 ID
      */
     async foldBlock(blockId) {
+        requireNonEmptyString(blockId, 'blockId');
         const response = await this.client.request('/api/block/foldBlock', { id: blockId });
         if (response.code !== 0) {
             throw new Error(`Failed to fold block: ${response.msg}`);
@@ -132,6 +146,7 @@ export class SiyuanBlockApi {
      * @param blockId 块 ID
      */
     async unfoldBlock(blockId) {
+        requireNonEmptyString(blockId, 'blockId');
         const response = await this.client.request('/api/block/unfoldBlock', { id: blockId });
         if (response.code !== 0) {
             throw new Error(`Failed to unfold block: ${response.msg}`);
@@ -142,6 +157,7 @@ export class SiyuanBlockApi {
      * @param blockId 块 ID
      */
     async getChildBlocks(blockId) {
+        requireNonEmptyString(blockId, 'blockId');
         const response = await this.client.request('/api/block/getChildBlocks', { id: blockId });
         if (response.code !== 0) {
             throw new Error(`Failed to get child blocks: ${response.msg}`);
@@ -154,6 +170,8 @@ export class SiyuanBlockApi {
      * @param toId 目标块 ID
      */
     async transferBlockRef(fromId, toId) {
+        requireNonEmptyString(fromId, 'fromId');
+        requireNonEmptyString(toId, 'toId');
         const response = await this.client.request('/api/block/transferBlockRef', {
             fromID: fromId,
             toID: toId,
@@ -161,6 +179,38 @@ export class SiyuanBlockApi {
         if (response.code !== 0) {
             throw new Error(`Failed to transfer block reference: ${response.msg}`);
         }
+    }
+    /**
+     * 在父块下插入块（前置）
+     */
+    async prependBlock(parentId, content) {
+        requireNonEmptyString(parentId, 'parentId');
+        requireNonEmptyString(content, 'content');
+        const response = await this.client.request('/api/block/prependBlock', {
+            parentID: parentId,
+            dataType: 'markdown',
+            data: content,
+        });
+        if (response.code !== 0) {
+            throw new Error(`Failed to prepend block: ${response.msg}`);
+        }
+        return response.data[0].doOperations[0].id;
+    }
+    /**
+     * 获取块面包屑
+     */
+    async getBlockBreadcrumb(blockId) {
+        requireNonEmptyString(blockId, 'blockId');
+        const response = await this.client.request('/api/block/getBlockBreadcrumb', { id: blockId });
+        return response.data;
+    }
+    /**
+     * 获取块基础信息
+     */
+    async getBlockInfo(blockId) {
+        requireNonEmptyString(blockId, 'blockId');
+        const response = await this.client.request('/api/block/getBlockInfo', { id: blockId });
+        return response.data;
     }
 }
 //# sourceMappingURL=block.js.map

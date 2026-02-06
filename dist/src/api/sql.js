@@ -1,6 +1,7 @@
 /**
  * 思源笔记 SQL API
  */
+import { requireNonEmptyString } from '../utils/validation.js';
 export class SiyuanSqlApi {
     client;
     constructor(client) {
@@ -11,6 +12,7 @@ export class SiyuanSqlApi {
      * @param stmt SQL 语句
      */
     async execute(stmt) {
+        requireNonEmptyString(stmt, 'stmt');
         const response = await this.client.request('/api/query/sql', { stmt });
         if (response.code !== 0) {
             throw new Error(`Failed to execute SQL: ${response.msg}`);

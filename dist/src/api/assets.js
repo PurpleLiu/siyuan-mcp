@@ -1,6 +1,7 @@
 /**
  * 思源笔记资产（资源） API
  */
+import { requireNonEmptyString } from '../utils/validation.js';
 export class SiyuanAssetApi {
     client;
     constructor(client) {
@@ -12,6 +13,8 @@ export class SiyuanAssetApi {
      * @param base64 Base64 内容（不含 data: 前缀）
      */
     async uploadAssetBase64(filename, base64) {
+        requireNonEmptyString(filename, 'filename');
+        requireNonEmptyString(base64, 'base64');
         const { baseUrl, token } = this.client.getConfig();
         const buffer = Buffer.from(base64, 'base64');
         const form = new FormData();

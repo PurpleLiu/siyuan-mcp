@@ -3,6 +3,7 @@
  * 用于创建和回滚数据快照，防止误操作
  */
 import type { SiyuanClient } from './client.js';
+import type { BatchOperationResult } from '../types/enhanced.js';
 export interface Snapshot {
     id: string;
     memo: string;
@@ -60,5 +61,30 @@ export declare class SiyuanSnapshotApi {
      * @param tag 标签名称
      */
     removeTaggedSnapshot(tag: string): Promise<void>;
+    /**
+     * 创建并标记快照（自动通过最新快照 ID 标记）
+     */
+    createTaggedSnapshot(memo: string, tag: string): Promise<{
+        snapshot: Snapshot;
+        tag: string;
+    }>;
+    /**
+     * 自动快照（支持自动标签）
+     */
+    autoSnapshot(options?: {
+        memoPrefix?: string;
+        tagPrefix?: string;
+    }): Promise<{
+        snapshot: Snapshot;
+        tag: string;
+    }>;
+    /**
+     * 清理旧的带标签快照
+     */
+    cleanupTaggedSnapshots(options: {
+        tagPrefix?: string;
+        keepLatest?: number;
+        maxAgeDays?: number;
+    }): Promise<BatchOperationResult>;
 }
 //# sourceMappingURL=snapshot.d.ts.map

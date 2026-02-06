@@ -1,6 +1,7 @@
 /**
  * 思源笔记文档操作相关 API
  */
+import { requireNonEmptyArray, requireNonEmptyString } from '../utils/validation.js';
 // extractTitle removed - no longer needed
 export class SiyuanDocumentApi {
     client;
@@ -15,6 +16,9 @@ export class SiyuanDocumentApi {
      * @returns 新创建的文档 ID
      */
     async createDocument(notebookId, path, markdown) {
+        requireNonEmptyString(notebookId, 'notebookId');
+        requireNonEmptyString(path, 'path');
+        requireNonEmptyString(markdown, 'markdown');
         const response = await this.client.request('/api/filetree/createDocWithMd', {
             notebook: notebookId,
             path: path,
@@ -31,6 +35,8 @@ export class SiyuanDocumentApi {
      * @param path 文档路径
      */
     async removeDocument(notebookId, path) {
+        requireNonEmptyString(notebookId, 'notebookId');
+        requireNonEmptyString(path, 'path');
         const response = await this.client.request('/api/filetree/removeDoc', {
             notebook: notebookId,
             path: path,
@@ -46,6 +52,9 @@ export class SiyuanDocumentApi {
      * @param newName 新名称
      */
     async renameDocument(notebookId, path, newName) {
+        requireNonEmptyString(notebookId, 'notebookId');
+        requireNonEmptyString(path, 'path');
+        requireNonEmptyString(newName, 'newName');
         const response = await this.client.request('/api/filetree/renameDoc', {
             notebook: notebookId,
             path: path,
@@ -63,6 +72,10 @@ export class SiyuanDocumentApi {
      * @param toPath 目标路径
      */
     async moveDocument(fromNotebookId, fromPath, toNotebookId, toPath) {
+        requireNonEmptyString(fromNotebookId, 'fromNotebookId');
+        requireNonEmptyString(fromPath, 'fromPath');
+        requireNonEmptyString(toNotebookId, 'toNotebookId');
+        requireNonEmptyString(toPath, 'toPath');
         const response = await this.client.request('/api/filetree/moveDoc', {
             fromNotebook: fromNotebookId,
             fromPath: fromPath,
@@ -80,6 +93,8 @@ export class SiyuanDocumentApi {
      */
     async moveDocumentsByIds(fromIds, toId) {
         const fromIdArray = Array.isArray(fromIds) ? fromIds : [fromIds];
+        requireNonEmptyArray(fromIdArray, 'fromIds');
+        requireNonEmptyString(toId, 'toId');
         const response = await this.client.request('/api/filetree/moveDocsByID', {
             fromIDs: fromIdArray,
             toID: toId,
@@ -95,6 +110,8 @@ export class SiyuanDocumentApi {
      */
     async moveDocumentsToNotebookRoot(fromIds, toNotebookId) {
         const fromIdArray = Array.isArray(fromIds) ? fromIds : [fromIds];
+        requireNonEmptyArray(fromIdArray, 'fromIds');
+        requireNonEmptyString(toNotebookId, 'toNotebookId');
         // 首先获取所有文档的路径
         const fromPaths = [];
         for (const docId of fromIdArray) {
@@ -125,6 +142,8 @@ export class SiyuanDocumentApi {
      * @returns 文档 ID 列表
      */
     async getDocIdsByPath(notebookId, path) {
+        requireNonEmptyString(notebookId, 'notebookId');
+        requireNonEmptyString(path, 'path');
         const response = await this.client.request('/api/filetree/getIDsByHPath', {
             notebook: notebookId,
             path: path,
@@ -138,6 +157,7 @@ export class SiyuanDocumentApi {
      * @returns 文档树
      */
     async getDocTree(notebookId, path) {
+        requireNonEmptyString(notebookId, 'notebookId');
         const response = await this.client.request('/api/filetree/listDocTree', {
             notebook: notebookId,
             path: path,
@@ -150,6 +170,7 @@ export class SiyuanDocumentApi {
      * @returns 人类可读路径
      */
     async getHumanReadablePath(blockId) {
+        requireNonEmptyString(blockId, 'blockId');
         const response = await this.client.request('/api/filetree/getHPathByID', {
             id: blockId,
         });
@@ -161,6 +182,8 @@ export class SiyuanDocumentApi {
      * @param path 文档存储路径（如 /foo/bar）
      */
     async getHumanReadablePathByPath(notebookId, path) {
+        requireNonEmptyString(notebookId, 'notebookId');
+        requireNonEmptyString(path, 'path');
         const response = await this.client.request('/api/filetree/getHPathByPath', {
             notebook: notebookId,
             path: path,
@@ -172,6 +195,7 @@ export class SiyuanDocumentApi {
      * @param blockId 块 ID（文档 ID）
      */
     async getPathById(blockId) {
+        requireNonEmptyString(blockId, 'blockId');
         const response = await this.client.request('/api/filetree/getPathByID', {
             id: blockId,
         });
@@ -185,6 +209,7 @@ export class SiyuanDocumentApi {
      * @returns 文档树响应节点数组
      */
     async getDocumentTree(id, maxDepth = 1) {
+        requireNonEmptyString(id, 'id');
         // 判断 id 是笔记本ID还是文档ID
         // 笔记本ID格式: 2025MMDD...-xxxxxxx (通常较长且以日期开头)
         // 先尝试作为笔记本ID获取
@@ -221,6 +246,7 @@ export class SiyuanDocumentApi {
      * 获取文档的 box 和 path 信息
      */
     async getDocInfo(docId) {
+        requireNonEmptyString(docId, 'docId');
         const response = await this.client.request('/api/query/sql', {
             stmt: `SELECT box, path, hpath FROM blocks WHERE id = '${docId}' AND type = 'd' LIMIT 1`,
         });
@@ -233,6 +259,8 @@ export class SiyuanDocumentApi {
      * 递归使用 listDocsByPath 获取文档树
      */
     async listDocsRecursive(notebookId, path, maxDepth, currentDepth, parentHPath) {
+        requireNonEmptyString(notebookId, 'notebookId');
+        requireNonEmptyString(path, 'path');
         const response = await this.client.request('/api/filetree/listDocsByPath', {
             notebook: notebookId,
             path: path,
@@ -264,6 +292,84 @@ export class SiyuanDocumentApi {
             nodes.push(node);
         }
         return nodes;
+    }
+    /**
+     * 批量创建文档
+     */
+    async createDocuments(items) {
+        requireNonEmptyArray(items, 'items');
+        const results = await Promise.all(items.map(async (item) => {
+            try {
+                const id = await this.createDocument(item.notebookId, item.path, item.markdown);
+                return { id, success: true };
+            }
+            catch (error) {
+                return { success: false, error: error instanceof Error ? error.message : String(error) };
+            }
+        }));
+        const success = results.filter((r) => r.success).length;
+        return {
+            total: results.length,
+            success,
+            failed: results.length - success,
+            results,
+        };
+    }
+    /**
+     * 通过路径批量移动文档
+     */
+    async moveDocumentsByPath(fromPaths, toNotebookId, toPath) {
+        requireNonEmptyArray(fromPaths, 'fromPaths');
+        requireNonEmptyString(toNotebookId, 'toNotebookId');
+        requireNonEmptyString(toPath, 'toPath');
+        const response = await this.client.request('/api/filetree/moveDocs', {
+            fromPaths,
+            toNotebook: toNotebookId,
+            toPath,
+        });
+        if (response.code !== 0) {
+            throw new Error(`Failed to move documents: ${response.msg}`);
+        }
+    }
+    /**
+     * 通过 ID 重命名文档
+     */
+    async renameDocumentById(documentId, newName) {
+        requireNonEmptyString(documentId, 'documentId');
+        requireNonEmptyString(newName, 'newName');
+        const response = await this.client.request('/api/filetree/renameDocByID', {
+            id: documentId,
+            title: newName,
+        });
+        if (response.code !== 0) {
+            throw new Error(`Failed to rename document by ID: ${response.msg}`);
+        }
+    }
+    /**
+     * 通过 ID 删除文档
+     */
+    async removeDocumentById(documentId) {
+        requireNonEmptyString(documentId, 'documentId');
+        const response = await this.client.request('/api/filetree/removeDocByID', {
+            id: documentId,
+        });
+        if (response.code !== 0) {
+            throw new Error(`Failed to remove document by ID: ${response.msg}`);
+        }
+    }
+    /**
+     * 根据路径列出子文档
+     */
+    async listDocsByPath(notebookId, path) {
+        requireNonEmptyString(notebookId, 'notebookId');
+        requireNonEmptyString(path, 'path');
+        const response = await this.client.request('/api/filetree/listDocsByPath', {
+            notebook: notebookId,
+            path,
+            sort: 15,
+            maxListCount: 0,
+        });
+        return response.data || { files: [] };
     }
 }
 //# sourceMappingURL=document.js.map

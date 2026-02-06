@@ -50,4 +50,81 @@ export class UnifiedSearchHandler extends BaseToolHandler {
         });
     }
 }
+/**
+ * 智慧搜尋工具：模糊匹配 + 相關性排序
+ */
+export class SmartSearchHandler extends BaseToolHandler {
+    name = 'smart_search';
+    description = 'Smart fuzzy search with relevance ranking across titles, tags, and content. Best for exploratory queries';
+    inputSchema = {
+        type: 'object',
+        properties: {
+            query: {
+                type: 'string',
+                description: 'Search query keywords (supports fuzzy matching)',
+            },
+            limit: {
+                type: 'number',
+                description: 'Maximum number of results (default: 10)',
+                default: 10,
+            },
+            notebook_id: {
+                type: 'string',
+                description: 'Optional: Limit to specific notebook ID',
+            },
+            types: {
+                type: 'array',
+                items: { type: 'string' },
+                description: 'Optional: Block types to search',
+            },
+            include_preview: {
+                type: 'boolean',
+                description: 'Include content preview in results (default: true)',
+                default: true,
+            },
+        },
+        required: ['query'],
+    };
+    async execute(args, context) {
+        return await context.siyuan.search.smartSearch(args.query, {
+            limit: args.limit || 10,
+            notebook: args.notebook_id,
+            types: args.types,
+            includeContentPreview: args.include_preview !== false,
+        });
+    }
+}
+/**
+ * 官方全文搜索工具
+ */
+export class FullTextSearchBlocksHandler extends BaseToolHandler {
+    name = 'full_text_search_blocks';
+    description = 'Official SiYuan full-text search API. Supports advanced filters, ordering, and pagination';
+    inputSchema = {
+        type: 'object',
+        properties: {
+            query: { type: 'string', description: 'Search query string' },
+            method: { type: 'string', description: 'Search method (default: keyword)' },
+            types: { type: 'array', items: { type: 'string' }, description: 'Block types to search' },
+            paths: { type: 'array', items: { type: 'string' }, description: 'Limit search paths' },
+            order_by: { type: 'string', description: 'Order by (default: rank)' },
+            group_by: { type: 'string', description: 'Group by field (optional)' },
+            page: { type: 'number', description: 'Page number (default: 1)' },
+            page_size: { type: 'number', description: 'Page size (default: 50)' },
+        },
+        required: ['query'],
+    };
+    async execute(args, context) {
+        return await context.siyuan.search.fullTextSearch({
+            query: args.query,
+            method: args.method,
+            types: args.types,
+            paths: args.paths,
+            orderBy: args.order_by,
+            groupBy: args.group_by,
+            page: args.page,
+            pageSize: args.page_size,
+        });
+    }
+}
 //# sourceMappingURL=search.js.map

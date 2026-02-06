@@ -2,7 +2,8 @@
  * 思源笔记文档操作相关 API
  */
 import type { SiyuanClient } from './client.js';
-import type { DocTreeNode, DocTreeNodeResponse } from '../types/index.js';
+import type { DocTreeNode, DocTreeNodeResponse, ListDocsByPathResponse } from '../types/index.js';
+import type { BatchOperationResult } from '../types/enhanced.js';
 export declare class SiyuanDocumentApi {
     private client;
     constructor(client: SiyuanClient);
@@ -98,5 +99,29 @@ export declare class SiyuanDocumentApi {
      * 递归使用 listDocsByPath 获取文档树
      */
     private listDocsRecursive;
+    /**
+     * 批量创建文档
+     */
+    createDocuments(items: Array<{
+        notebookId: string;
+        path: string;
+        markdown: string;
+    }>): Promise<BatchOperationResult>;
+    /**
+     * 通过路径批量移动文档
+     */
+    moveDocumentsByPath(fromPaths: string[], toNotebookId: string, toPath: string): Promise<void>;
+    /**
+     * 通过 ID 重命名文档
+     */
+    renameDocumentById(documentId: string, newName: string): Promise<void>;
+    /**
+     * 通过 ID 删除文档
+     */
+    removeDocumentById(documentId: string): Promise<void>;
+    /**
+     * 根据路径列出子文档
+     */
+    listDocsByPath(notebookId: string, path: string): Promise<ListDocsByPathResponse>;
 }
 //# sourceMappingURL=document.d.ts.map

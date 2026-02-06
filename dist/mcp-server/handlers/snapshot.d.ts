@@ -60,4 +60,35 @@ export declare class RollbackSnapshotHandler extends BaseToolHandler<{
         message: string;
     }>;
 }
+/**
+ * 自动快照
+ */
+export declare class AutoSnapshotHandler extends BaseToolHandler<{
+    memo_prefix?: string;
+    tag_prefix?: string;
+}, {
+    snapshot: any;
+    tag: string;
+}> {
+    readonly name = "auto_snapshot";
+    readonly description = "Create an auto snapshot with a generated timestamp tag";
+    readonly inputSchema: JSONSchema;
+    execute(args: any, context: ExecutionContext): Promise<{
+        snapshot: any;
+        tag: string;
+    }>;
+}
+/**
+ * 清理旧的带标签快照
+ */
+export declare class CleanupSnapshotsHandler extends BaseToolHandler<{
+    tag_prefix?: string;
+    keep_latest?: number;
+    max_age_days?: number;
+}, any> {
+    readonly name = "cleanup_snapshots";
+    readonly description = "Cleanup old tagged snapshots by prefix, age, and retention count";
+    readonly inputSchema: JSONSchema;
+    execute(args: any, context: ExecutionContext): Promise<any>;
+}
 //# sourceMappingURL=snapshot.d.ts.map
